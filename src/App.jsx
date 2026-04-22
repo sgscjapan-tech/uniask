@@ -177,6 +177,25 @@ function AskForm({ profile, onDone }) {
   )
 }
 
+function EditableQuestion({ q, onSave }) {
+  const [editing, setEditing] = useState(false)
+  const [val, setVal] = useState(q.question)
+  const save = async () => {
+    await supabase.from('questions').update({ question: val.trim() }).eq('id', q.id)
+    setEditing(false); onSave()
+  }
+  if (editing) return (
+    <div style={{marginBottom:8}}>
+      <textarea value={val} onChange={e=>setVal(e.target.value)} rows={4} style={{...s.input,marginBottom:6}}/>
+      <div style={{display:'flex',gap:6}}>
+        <button style={s.btn} onClick={()=>setEditing(false)}>Cancel</button>
+        <button style={{...s.btn,...s.pri}} onClick={save}>Save</button>
+      </div>
+    </div>
+  )
+  return <button style={{...s.btn,fontSize:12,padding:'4px 10px',marginBottom:8}} onClick={()=>setEditing(true)}>Edit question</button>
+}
+
 function MyQuestions({ profile }) {
   const [tab, setTab] = useState('waiting')
   const [qs, setQs] = useState([])
@@ -216,7 +235,8 @@ function MyQuestions({ profile }) {
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
           </div>
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{q.question}</p>
-          <button style={{...s.btn,background:'#854F0B',color:'#fff',borderColor:'#854F0B',padding:'4px 10px',fontSize:12}} onClick={() => remind(q)}>Send reminder</button>
+          <EditableQuestion q={q} onSave={load} />
+<button style={{...s.btn,background:'#854F0B',color:'#fff',borderColor:'#854F0B',padding:'4px 10px',fontSize:12}} onClick={() => remind(q)}>Send reminder</button>
         </div>
       )))}
       {tab==='answered' && (answered.length===0 ? <div style={s.empty}>No answered questions yet</div> : answered.map(q => (
