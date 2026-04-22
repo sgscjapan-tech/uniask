@@ -532,6 +532,7 @@ function AdminAssign({ onCount }) {
             {fq.rejected_by?.length>0 && <span style={{...s.chip,background:'#FCEBEB',color:'#791F1F'}}>Rejected — needs reassign</span>}
             {fq.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>}
             <span style={{fontSize:12,color:'#999'}}>from: {fq.student_name||fq.student_code}</span>
+<span style={{fontSize:12,color:'#999'}}>requested: {fq.target_name||'Anyone'}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(fq.created_at)}</span>
           </div>
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:12}}>{fq.question}</p>
