@@ -406,7 +406,14 @@ function AdminAssign({ onCount }) {
 
   const doAssign = async () => {
     setBusy(true)
-    await supabase.from('questions').update({status:'assigned',assigned_to:picked,assigned_at:new Date().toISOString()}).eq('id',sel.id)
+    const { error } = await supabase.from('questions').update({
+      status: 'assigned',
+      assigned_to: picked,
+      assigned_at: new Date().toISOString()
+    }).eq('id', sel.id)
+    console.log('assign error:', error)
+    setSel(null);setPicked([]);setSearch('');setBusy(false);load()
+  }
     setSel(null);setPicked([]);setSearch('');setBusy(false);load()
   }
   const doAdminAns = async () => {
