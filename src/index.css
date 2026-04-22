@@ -1,0 +1,63 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #f5f5f3;
+  color: #1a1a1a;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #1a1a18;
+    color: #e8e6dc;
+  }
+}
+
+:root {
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f5f4ed;
+  --color-background-tertiary: #f0efe8;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666660;
+  --color-text-tertiary: #999994;
+  --color-border-tertiary: rgba(0,0,0,0.12);
+  --color-border-secondary: rgba(0,0,0,0.28);
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary: #252523;
+    --color-background-secondary: #2c2c2a;
+    --color-background-tertiary: #1a1a18;
+    --color-text-primary: #e8e6dc;
+    --color-text-secondary: #9c9a92;
+    --color-text-tertiary: #666660;
+    --color-border-tertiary: rgba(255,255,255,0.10);
+    --color-border-secondary: rgba(255,255,255,0.22);
+  }
+}
+
+#root {
+  min-height: 100vh;
+}
+
+textarea {
+  resize: vertical;
+}
+
+code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  background: var(--color-background-secondary);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
