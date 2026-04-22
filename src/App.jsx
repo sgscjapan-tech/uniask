@@ -167,12 +167,9 @@ function AskForm({ profile, onDone }) {
       <p style={{fontWeight:500,marginBottom:14}}>Ask a question</p>
       <div style={s.stack}>
         <div>
-          <label style={s.lbl}>Who are you asking?</label>
-          <select value={target} onChange={e=>setTarget(e.target.value)} style={s.input}>
-            <option value="anyone">Anyone (first available)</option>
-            {alumni.map(a => <option key={a.id} value={a.id}>{a.student_code}</option>)}
-          </select>
-        </div>
+  <label style={s.lbl}>Who are you asking? (optional — leave blank for anyone)</label>
+  <input value={target === 'anyone' ? '' : target} onChange={e=>setTarget(e.target.value||'anyone')} placeholder="Type a name, or leave blank for anyone" style={s.input}/>
+</div>
         <div>
           <label style={s.lbl}>Question</label>
           <textarea value={question} onChange={e=>setQuestion(e.target.value)} rows={5} placeholder="Type your question here…" style={s.input} />
