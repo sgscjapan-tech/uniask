@@ -104,7 +104,7 @@ function AuthPage() {
           </div>
           <div style={{...s.row,gap:4,marginBottom:14}}>
             {['student','alumni','admin'].map(r => (
-              <button key={r} onClick={() => setRole(r)} style={{...s.btn, flex:1, fontSize:12, background: role===r ? '#EEEDFE':'transparent', color: role===r ? '#3C3489':'#666', borderColor: role===r ? '#AFA9EC':'rgba(0,0,0,0.2)'}}>{r}</button>
+              <button key={r} onClick={() => setRole(r)} style={{...s.btn, flex:1, fontSize:12, background: role===r ? '#EEEDFE':'transparent', color: role===r ? '#3C3489':'#666', borderColor: role===r ? '#AFA9EC':'rgba(0,0,0,0.2)'}}>{r === 'student' ? 'student/parent' : r}</button>
             ))}
           </div>
           <div style={s.stack}>
