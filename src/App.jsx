@@ -136,19 +136,14 @@ function StudentApp({ profile, updateProfile }) {
 
 function AskForm({ profile, onDone }) {
   const [question, setQuestion] = useState('')
-  const [target, setTarget] = useState('anyone')
-  const [alumni, setAlumni] = useState([])
+  const [target, setTarget] = useState('')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
-
-  useEffect(() => {
-    supabase.from('profiles').select('id,student_code').eq('role','alumni').then(({data}) => setAlumni(data||[]))
-  }, [])
 
   const submit = async () => {
     if (!question.trim()) return
     setBusy(true)
-    const tName = target==='anyone' ? 'Anyone' : alumni.find(a=>a.id===target)?.student_code || target
+    const tName = target.trim() || 'Anyone'
     await supabase.from('questions').insert({ student_id: profile.id, student_code: profile.student_code, question: question.trim(), target_name: tName, status: 'open' })
     setBusy(false); setDone(true)
   }
@@ -158,7 +153,7 @@ function AskForm({ profile, onDone }) {
       <div style={{width:48,height:48,background:'#EAF3DE',borderRadius:'50%',margin:'0 auto 12px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,color:'#27500A'}}>✓</div>
       <p style={{fontWeight:500,marginBottom:8}}>Question submitted!</p>
       <p style={{color:'#666',fontSize:13,marginBottom:16}}>You'll be notified by email when answered.</p>
-      <button style={{...s.btn,...s.pri}} onClick={() => { setDone(false); setQuestion(''); setTarget('anyone'); onDone() }}>View my questions</button>
+      <button style={{...s.btn,...s.pri}} onClick={() => { setDone(false); setQuestion(''); setTarget(''); onDone() }}>View my questions</button>
     </div>
   )
 
@@ -167,9 +162,9 @@ function AskForm({ profile, onDone }) {
       <p style={{fontWeight:500,marginBottom:14}}>Ask a question</p>
       <div style={s.stack}>
         <div>
-  <label style={s.lbl}>Who are you asking? (optional — leave blank for anyone)</label>
-  <input value={target === 'anyone' ? '' : target} onChange={e=>setTarget(e.target.value||'anyone')} placeholder="Type a name, or leave blank for anyone" style={s.input}/>
-</div>
+          <label style={s.lbl}>Who are you asking? (optional — leave blank for anyone)</label>
+          <input value={target} onChange={e=>setTarget(e.target.value)} placeholder="Type a name, or leave blank for anyone" style={s.input}/>
+        </div>
         <div>
           <label style={s.lbl}>Question</label>
           <textarea value={question} onChange={e=>setQuestion(e.target.value)} rows={5} placeholder="Type your question here…" style={s.input} />
@@ -216,6 +211,7 @@ function MyQuestions({ profile }) {
         <div key={q.id} style={s.qcard}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
             <span style={{...s.chip,background:q.status==='assigned'?'#FAEEDA':'#E6F1FB',color:q.status==='assigned'?'#633806':'#0C447C'}}>{q.status==='assigned'?'In progress':'Waiting'}</span>
+            {q.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>}
             <span style={{fontSize:12,color:'#999'}}>To: {q.target_name}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
           </div>
@@ -236,6 +232,18 @@ function MyQuestions({ profile }) {
             <p style={{fontSize:12,color:'#534AB7',fontWeight:500,marginBottom:3}}>{q.answered_by_name} · {fmt(q.answered_at)}</p>
             <p style={{fontSize:13,lineHeight:1.7}}>{q.answer}</p>
           </div>
+          {/* Show alumni_answers if any */}
+          {q.alumni_answers && q.alumni_answers.length > 0 && (
+            <div style={{marginTop:10}}>
+              <p style={{fontSize:12,color:'#666',fontWeight:500,marginBottom:6}}>Additional responses:</p>
+              {q.alumni_answers.map((a,i) => (
+                <div key={i} style={{background:'#f5f4ed',borderLeft:'3px solid #AFA9EC',padding:'10px 14px',borderRadius:'0 8px 8px 0',marginBottom:6}}>
+                  <p style={{fontSize:12,color:'#534AB7',fontWeight:500,marginBottom:3}}>{a.by_name} · {fmt(a.at)}</p>
+                  <p style={{fontSize:13,lineHeight:1.7}}>{a.text}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )))}
     </div>
@@ -245,13 +253,86 @@ function MyQuestions({ profile }) {
 function AlumniApp({ profile, updateProfile }) {
   const [tab, setTab] = useState('inbox')
   const [cnt, setCnt] = useState(0)
+  const [openCnt, setOpenCnt] = useState(0)
   return (
     <div style={s.page}>
-      <TabBar tabs={[['inbox',`Inbox${cnt>0?' ('+cnt+')':''}`],['past','Past answers'],['faq','FAQ'],['settings','Settings']]} active={tab} onChange={setTab} />
+      <TabBar tabs={[['inbox',`Inbox${cnt>0?' ('+cnt+')':''}`],['open',`Open Questions${openCnt>0?' ('+openCnt+')':''}`],['past','Past answers'],['faq','FAQ'],['settings','Settings']]} active={tab} onChange={setTab} />
       {tab==='inbox'    && <AlumniInbox profile={profile} onCount={setCnt} />}
+      {tab==='open'     && <AlumniOpenQuestions profile={profile} onCount={setOpenCnt} />}
       {tab==='past'     && <AlumniPast profile={profile} />}
       {tab==='faq'      && <FaqView />}
       {tab==='settings' && <ProfileSettings profile={profile} updateProfile={updateProfile} />}
+    </div>
+  )
+}
+
+// NEW: Alumni view for open-to-all questions
+function AlumniOpenQuestions({ profile, onCount }) {
+  const [qs, setQs] = useState([])
+  const [sel, setSel] = useState(null)
+  const [ans, setAns] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const load = useCallback(async () => {
+    const { data } = await supabase.from('questions').select('*').eq('open_to_alumni', true).order('created_at', { ascending: false })
+    const d = data||[]; setQs(d); onCount(d.length)
+  }, [onCount])
+
+  useEffect(() => { load() }, [load])
+
+  const send = async () => {
+    setBusy(true)
+    const existing = sel.alumni_answers || []
+    const newAnswer = { text: ans.trim(), by: profile.id, by_name: 'Alumni ' + profile.student_code, at: new Date().toISOString() }
+    await supabase.from('questions').update({ alumni_answers: [...existing, newAnswer] }).eq('id', sel.id)
+    setSel(null); setAns(''); setBusy(false); load()
+  }
+
+  if (sel) return (
+    <div>
+      <button style={{...s.btn,marginBottom:14}} onClick={() => { setSel(null); setAns('') }}>← Back</button>
+      <div style={{...s.card,marginBottom:12}}>
+        <div style={{display:'flex',gap:6,marginBottom:8}}>
+          <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>
+          <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(sel.created_at)}</span>
+        </div>
+        <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{sel.question}</p>
+        {/* Show existing alumni answers */}
+        {sel.alumni_answers && sel.alumni_answers.length > 0 && (
+          <div style={{marginTop:8}}>
+            <p style={{fontSize:12,color:'#666',fontWeight:500,marginBottom:6}}>Previous responses:</p>
+            {sel.alumni_answers.map((a,i) => (
+              <div key={i} style={{background:'#f5f4ed',borderLeft:'3px solid #AFA9EC',padding:'10px 14px',borderRadius:'0 8px 8px 0',marginBottom:6}}>
+                <p style={{fontSize:12,color:'#534AB7',fontWeight:500,marginBottom:3}}>{a.by_name} · {fmt(a.at)}</p>
+                <p style={{fontSize:13,lineHeight:1.7}}>{a.text}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div style={s.card}>
+        <label style={s.lbl}>Add your response</label>
+        <textarea value={ans} onChange={e=>setAns(e.target.value)} rows={5} placeholder="Type your response…" style={{...s.input,marginTop:6}} />
+        <div style={{display:'flex',justifyContent:'flex-end',marginTop:10}}>
+          <button style={{...s.btn,...s.pri}} onClick={send} disabled={!ans.trim()||busy}>{busy?'Sending…':'Send response'}</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  return qs.length===0 ? <div style={s.empty}>No open questions right now</div> : (
+    <div>
+      <p style={{fontSize:13,color:'#666',marginBottom:14}}>These questions are open for any alumni to respond to.</p>
+      {qs.map(q => (
+        <div key={q.id} style={{...s.qcard,cursor:'pointer'}} onClick={() => { setSel(q); setAns('') }}>
+          <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
+            <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>
+            <span style={{fontSize:12,color:'#999'}}>{q.alumni_answers?.length||0} response{q.alumni_answers?.length!==1?'s':''}</span>
+            <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
+          </div>
+          <p style={{fontSize:14,lineHeight:1.65}}>{q.question}</p>
+        </div>
+      ))}
     </div>
   )
 }
@@ -414,17 +495,26 @@ function AdminAssign({ onCount }) {
     console.log('assign error:', error)
     setSel(null);setPicked([]);setSearch('');setBusy(false);load()
   }
-    setSel(null);setPicked([]);setSearch('');setBusy(false);load()
-  }
+
   const doAdminAns = async () => {
     setBusy(true)
     await supabase.from('questions').update({status:'answered',answer:adminAns.trim(),answered_by:'admin',answered_by_name:'Admin',answered_at:new Date().toISOString()}).eq('id',sel.id)
     setSel(null);setAdminAns('');setBusy(false);load()
   }
+
   const doEdit = async (q) => {
     const edits=[...(q.edits||[]),{text:q.answer,at:q.answered_at}]
     await supabase.from('questions').update({answer:editVal,edits,answered_at:new Date().toISOString(),edited_at:new Date().toISOString()}).eq('id',q.id)
     setEditing(null);load()
+  }
+
+  // Toggle open_to_alumni
+  const toggleOpenToAlumni = async (q) => {
+    setBusy(true)
+    await supabase.from('questions').update({ open_to_alumni: !q.open_to_alumni }).eq('id', q.id)
+    setBusy(false); load()
+    // Update sel if we're viewing this question
+    if (sel && sel.id === q.id) setSel(s => ({...s, open_to_alumni: !s.open_to_alumni}))
   }
 
   const filteredAlumni = alumni.filter(a=>(a.name+' '+a.student_code).toLowerCase().includes(search.toLowerCase()))
@@ -440,10 +530,37 @@ function AdminAssign({ onCount }) {
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:8}}>
             <span style={{...s.chip,background:fq.status==='answered'?'#EAF3DE':fq.status==='assigned'?'#FAEEDA':'#E6F1FB',color:fq.status==='answered'?'#085041':fq.status==='assigned'?'#633806':'#0C447C'}}>{fq.status}</span>
             {fq.rejected_by?.length>0 && <span style={{...s.chip,background:'#FCEBEB',color:'#791F1F'}}>Rejected — needs reassign</span>}
+            {fq.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>}
             <span style={{fontSize:12,color:'#999'}}>from: {fq.student_name||fq.student_code}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(fq.created_at)}</span>
           </div>
-          <p style={{fontSize:14,lineHeight:1.65}}>{fq.question}</p>
+          <p style={{fontSize:14,lineHeight:1.65,marginBottom:12}}>{fq.question}</p>
+          {/* Open to alumni toggle */}
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:fq.open_to_alumni?'#EEEDFE':'#f9f9f9',borderRadius:8,border:'0.5px solid rgba(0,0,0,0.1)'}}>
+            <div style={{flex:1}}>
+              <p style={{fontSize:13,fontWeight:500,color:fq.open_to_alumni?'#3C3489':'#1a1a1a'}}>Open to all alumni</p>
+              <p style={{fontSize:12,color:'#666'}}>Any alumni can view and respond to this question</p>
+            </div>
+            <button
+              style={{...s.btn, background:fq.open_to_alumni?'#534AB7':'transparent', color:fq.open_to_alumni?'#fff':'#1a1a1a', borderColor:fq.open_to_alumni?'#534AB7':'rgba(0,0,0,0.28)', fontSize:12, padding:'5px 14px', whiteSpace:'nowrap'}}
+              onClick={()=>toggleOpenToAlumni(fq)}
+              disabled={busy}
+            >
+              {fq.open_to_alumni ? '✓ On — click to turn off' : 'Turn on'}
+            </button>
+          </div>
+          {/* Show alumni responses if any */}
+          {fq.alumni_answers && fq.alumni_answers.length > 0 && (
+            <div style={{marginTop:12}}>
+              <p style={{fontSize:12,color:'#666',fontWeight:500,marginBottom:6}}>Alumni responses ({fq.alumni_answers.length}):</p>
+              {fq.alumni_answers.map((a,i) => (
+                <div key={i} style={{background:'#f5f4ed',borderLeft:'3px solid #AFA9EC',padding:'10px 14px',borderRadius:'0 8px 8px 0',marginBottom:6}}>
+                  <p style={{fontSize:12,color:'#534AB7',fontWeight:500,marginBottom:3}}>{a.by_name} · {fmt(a.at)}</p>
+                  <p style={{fontSize:13,lineHeight:1.7}}>{a.text}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         {fq.status!=='answered' && (
           <>
@@ -515,6 +632,7 @@ function AdminAssign({ onCount }) {
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
             {q.rejected_by?.length>0&&<span style={{...s.chip,background:'#FCEBEB',color:'#791F1F'}}>Rejected</span>}
             {q.remind_at&&<span style={{...s.chip,background:'#FAEEDA',color:'#633806'}}>Reminded</span>}
+            {q.open_to_alumni&&<span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to alumni</span>}
             <span style={{...s.chip,background:q.status==='answered'?'#EAF3DE':q.status==='assigned'?'#FAEEDA':'#E6F1FB',color:q.status==='answered'?'#085041':q.status==='assigned'?'#633806':'#0C447C'}}>{q.status}</span>
             <span style={{fontSize:12,color:'#999'}}>{q.student_name||q.student_code}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
@@ -538,6 +656,7 @@ function AdminAllQ() {
         <div key={q.id} style={s.qcard}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
             <span style={{...s.chip,background:q.status==='answered'?'#EAF3DE':q.status==='assigned'?'#FAEEDA':'#E6F1FB',color:q.status==='answered'?'#085041':q.status==='assigned'?'#633806':'#0C447C'}}>{q.status}</span>
+            {q.open_to_alumni&&<span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to alumni</span>}
             <span style={{fontSize:12,color:'#999'}}>{q.student_name||q.student_code}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
           </div>
@@ -775,7 +894,6 @@ function ProfileSettings({ profile, updateProfile }) {
   )
 }
 
-/* ── tiny shared components ─────────────────────────────────── */
 function TabBar({ tabs, active, onChange }) {
   return (
     <div style={{display:'flex',gap:2,borderBottom:'0.5px solid rgba(0,0,0,0.12)',marginBottom:'1.25rem',flexWrap:'wrap',overflowX:'auto'}}>
@@ -796,7 +914,6 @@ function Inp({ label, value, onChange, type='text', placeholder, onKeyDown }) {
   )
 }
 
-/* ── styles object ──────────────────────────────────────────── */
 const fmt = ts => ts ? new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : ''
 const s = {
   center:  { display:'flex', alignItems:'center', justifyContent:'center', minHeight:'90vh', padding:'1rem' },
