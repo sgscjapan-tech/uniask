@@ -104,14 +104,14 @@ function AuthPage() {
           </div>
           <div style={{...s.row,gap:4,marginBottom:14}}>
             {['student','alumni','admin'].map(r => (
-              <button key={r} onClick={() => setRole(r)} style={{...s.btn, flex:1, fontSize:12, background: role===r ? '#EEEDFE':'transparent', color: role===r ? '#3C3489':'#666', borderColor: role===r ? '#AFA9EC':'rgba(0,0,0,0.2)'}}>{r === 'student' ? 'student/parent' : r}</button>
+              <button key={r} onClick={() => setRole(r)} style={{...s.btn, flex:1, fontSize:12, background: role===r ? '#EEEDFE':'transparent', color: role===r ? '#3C3489':'#666', borderColor: role===r ? '#AFA9EC':'rgba(0,0,0,0.2)'}}>{r}</button>
             ))}
           </div>
           <div style={s.stack}>
             {mode==='register' && <Inp label="Full name" value={name} onChange={setName} />}
             <Inp label="Email" value={email} onChange={setEmail} placeholder="your@email.com" />
             <Inp label="Password" type="password" value={pw} onChange={setPw} placeholder="••••••••" onKeyDown={e => e.key==='Enter' && go()} />
-            <Inp label={role==='admin' ? 'Admin code' : 'School code'} value={code} onChange={setCode} placeholder={role==='admin' ? '' : 'e.g. 12345'} />
+            <Inp label={role==='admin' ? 'Admin code' : 'School code'} value={code} onChange={setCode} placeholder={role==='admin' ? 'WaWaWaWa' : 'e.g. 12345'} />
             {msg && <p style={{fontSize:12, color: ok ? '#27500A' : '#A32D2D'}}>{msg}</p>}
             <button style={{...s.btn, background:'#534AB7', color:'#fff', borderColor:'#534AB7', padding:'9px', width:'100%'}} onClick={go} disabled={busy}>{busy ? 'Loading…' : (mode==='login' ? 'Log in' : 'Register')}</button>
           </div>
@@ -177,25 +177,6 @@ function AskForm({ profile, onDone }) {
   )
 }
 
-function EditableQuestion({ q, onSave }) {
-  const [editing, setEditing] = useState(false)
-  const [val, setVal] = useState(q.question)
-  const save = async () => {
-    await supabase.from('questions').update({ question: val.trim() }).eq('id', q.id)
-    setEditing(false); onSave()
-  }
-  if (editing) return (
-    <div style={{marginBottom:8}}>
-      <textarea value={val} onChange={e=>setVal(e.target.value)} rows={4} style={{...s.input,marginBottom:6}}/>
-      <div style={{display:'flex',gap:6}}>
-        <button style={s.btn} onClick={()=>setEditing(false)}>Cancel</button>
-        <button style={{...s.btn,...s.pri}} onClick={save}>Save</button>
-      </div>
-    </div>
-  )
-  return <button style={{...s.btn,fontSize:12,padding:'4px 10px',marginBottom:8}} onClick={()=>setEditing(true)}>Edit question</button>
-}
-
 function MyQuestions({ profile }) {
   const [tab, setTab] = useState('waiting')
   const [qs, setQs] = useState([])
@@ -235,8 +216,7 @@ function MyQuestions({ profile }) {
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
           </div>
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{q.question}</p>
-          <EditableQuestion q={q} onSave={load} />
-<button style={{...s.btn,background:'#854F0B',color:'#fff',borderColor:'#854F0B',padding:'4px 10px',fontSize:12}} onClick={() => remind(q)}>Send reminder</button>
+          <button style={{...s.btn,background:'#854F0B',color:'#fff',borderColor:'#854F0B',padding:'4px 10px',fontSize:12}} onClick={() => remind(q)}>Send reminder</button>
         </div>
       )))}
       {tab==='answered' && (answered.length===0 ? <div style={s.empty}>No answered questions yet</div> : answered.map(q => (
@@ -552,7 +532,6 @@ function AdminAssign({ onCount }) {
             {fq.rejected_by?.length>0 && <span style={{...s.chip,background:'#FCEBEB',color:'#791F1F'}}>Rejected — needs reassign</span>}
             {fq.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>}
             <span style={{fontSize:12,color:'#999'}}>from: {fq.student_name||fq.student_code}</span>
-<span style={{fontSize:12,color:'#999'}}>requested: {fq.target_name||'Anyone'}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(fq.created_at)}</span>
           </div>
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:12}}>{fq.question}</p>
