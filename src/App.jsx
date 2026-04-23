@@ -120,20 +120,20 @@ function AuthPage() {
             {mode==='register' && <Inp label="Full name" value={name} onChange={setName} />}
             <Inp label="Email" value={email} onChange={setEmail} placeholder="your@email.com" />
             <Inp label="Password" type="password" value={pw} onChange={setPw} placeholder="••••••••" onKeyDown={e => e.key==='Enter' && go()} />
-            {mode === 'register' && role !== 'admin' && !noCode && (
+            {role !== 'admin' && mode === 'register' && !noCode && (
               <div>
                 <Inp label="School code" value={code} onChange={setCode} placeholder="e.g. 12345" />
                 <button style={{fontSize:12,color:'#534AB7',background:'none',border:'none',cursor:'pointer',padding:'4px 0',marginTop:4}} onClick={()=>setNoCode(true)}>I don't have a school code</button>
               </div>
             )}
-            {mode === 'register' && role !== 'admin' && noCode && (
+            {role !== 'admin' && mode === 'register' && noCode && (
               <div>
                 <Inp label="Your school name" value={schoolName} onChange={setSchoolName} placeholder="Enter your school's full name" />
                 <button style={{fontSize:12,color:'#534AB7',background:'none',border:'none',cursor:'pointer',padding:'4px 0',marginTop:4}} onClick={()=>setNoCode(false)}>I have a school code</button>
               </div>
             )}
-            {mode === 'register' && role === 'admin' && (
-              <Inp label="Admin code" value={code} onChange={setCode} placeholder="" />
+            {(role === 'admin' || mode === 'login') && (
+              <Inp label={role==='admin' ? 'Admin code' : 'School code'} value={code} onChange={setCode} placeholder="" />
             )}
             {msg && <p style={{fontSize:12, color: ok ? '#27500A' : '#A32D2D'}}>{msg}</p>}
             <button style={{...s.btn, background:'#534AB7', color:'#fff', borderColor:'#534AB7', padding:'9px', width:'100%'}} onClick={go} disabled={busy}>{busy ? 'Loading…' : (mode==='login' ? 'Log in' : 'Register')}</button>
