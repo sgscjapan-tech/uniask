@@ -921,8 +921,6 @@ function UserMgr() {
     await supabase.from('profiles').update({ school_code: schoolCode }).eq('id', u.id)
     load()
   }
-  const pendingUsers = users.filter(u => u.school_code === 'PENDING')
-  const activeUsers = users.filter(u => u.school_code !== 'PENDING')
   const approveUser = async (u, schoolCode) => {
     await supabase.from('profiles').update({ school_code: schoolCode }).eq('id', u.id)
     load()
