@@ -83,8 +83,10 @@ function AuthPage() {
       } else if (noCode && role !== 'admin') {
         // Request school — submit to pending_schools and stop
         if (!schoolName.trim()) { setMsg('Please enter your school name'); setBusy(false); return }
-        await supabase.from('pending_schools').insert({ name: schoolName.trim(), requested_by_email: email, requested_by_name: name })
-        setMsg('Your school request has been sent to the admin. Once approved you will receive a school code by email.'); setOk(true); setBusy(false); return
+        const sc2 = (role==='alumni'?'ALM-':'STU-')+String(Math.floor(Math.random()*9000)+1000)
+        const {error:e2} = await supabase.auth.signUp({email, password:pw, options:{data:{name,role,school_code:'PENDING',student_code:sc2,pending_school_name:schoolName.trim()}}})
+        if(e2){setMsg(e2.message);setBusy(false);return}
+        setMsg('Registered! You can log in while your school is being reviewed.');setOk(true);setBusy(false);return
       } else {
         if (!code) { setMsg('Please enter a school code or select "I don\'t have a code"'); setBusy(false); return }
         const { data: school } = await supabase.from('schools').select('id').eq('code', code).single()
