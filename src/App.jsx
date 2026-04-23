@@ -915,6 +915,18 @@ function UserMgr() {
   useEffect(() => { load() }, [])
 
   const sName = code => schools.find(s=>s.code===code)?.name||code
+  const pendingUsers = users.filter(u => u.school_code === 'PENDING')
+  const activeUsers = users.filter(u => u.school_code !== 'PENDING')
+  const approveUser = async (u, schoolCode) => {
+    await supabase.from('profiles').update({ school_code: schoolCode }).eq('id', u.id)
+    load()
+  }
+  const pendingUsers = users.filter(u => u.school_code === 'PENDING')
+  const activeUsers = users.filter(u => u.school_code !== 'PENDING')
+  const approveUser = async (u, schoolCode) => {
+    await supabase.from('profiles').update({ school_code: schoolCode }).eq('id', u.id)
+    load()
+  }
 
   const deleteUser = async (u) => {
     if (!window.confirm('Delete '+u.name+'? This removes their profile but NOT their auth account.')) return
@@ -927,7 +939,7 @@ function UserMgr() {
     setEditingId(null); load()
   }
 
-  const sorted = [...users]
+  const sorted = [...activeUsers]
     .filter(u=>(u.name+' '+u.email+' '+u.student_code+' '+(sName(u.school_code)||'')).toLowerCase().includes(search.toLowerCase()))
     .sort((a,b) => {
       if (sortBy==='name') return (a.name||'').localeCompare(b.name||'')
@@ -942,6 +954,27 @@ function UserMgr() {
 
   return (
     <div style={s.stack}>
+      {pendingUsers.length > 0 && (
+        <div style={{...s.card, borderColor:'#F0B429'}}>
+          <p style={{fontWeight:500,marginBottom:10,color:'#854F0B'}}>⏳ Pending users — no school code ({pendingUsers.length})</p>
+          {pendingUsers.map(u => (
+            <div key={u.id} style={{...s.qcard, borderColor:'#F0B429', marginBottom:8}}>
+              <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
+                <span style={{fontSize:13,fontWeight:500}}>{u.name}</span>
+                <span style={{...s.chip,background:u.role==='alumni'?'#EAF3DE':'#E6F1FB',color:u.role==='alumni'?'#085041':'#0C447C'}}>{u.role}</span>
+              </div>
+              <p style={{fontSize:12,color:'#666',marginBottom:8}}>{u.email}{u.pending_school_name && <span> · School: <strong>{u.pending_school_name}</strong></span>}</p>
+              <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
+                <select onChange={e=>e.target.value&&approveUser(u,e.target.value)} defaultValue= style={{...s.input,width:'auto',fontSize:12}}>
+                  <option value=>Assign to school to approve…</option>
+                  {schools.map(sc=><option key={sc.id} value={sc.code}>{sc.name} ({sc.code})</option>)}
+                </select>
+                <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'4px 12px'}} onClick={()=>deleteUser(u)}>✕ Decline</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…" style={{...s.input,flex:1,minWidth:160}}/>
         <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{...s.input,width:'auto',flex:1,minWidth:160}}>
