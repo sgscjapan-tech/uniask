@@ -961,7 +961,7 @@ function UserMgr() {
                 <span style={{fontSize:13,fontWeight:500}}>{u.name}</span>
                 <span style={{...s.chip,background:u.role==='alumni'?'#EAF3DE':'#E6F1FB',color:u.role==='alumni'?'#085041':'#0C447C'}}>{u.role}</span>
               </div>
-              <p style={{fontSize:12,color:'#666',marginBottom:8}}>{u.email}{u.pending_school_name && <span> · School: <strong>{u.pending_school_name}</strong></span>}</p>
+              <p style={{fontSize:12,color:'#666',marginBottom:8}}>{u.email} · {u.pending_school_name || ''}</p>
               <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
                 <select onChange={e=>e.target.value&&approveUser(u,e.target.value)} defaultValue= style={{...s.input,width:'auto',fontSize:12}}>
                   <option value=>Assign to school to approve…</option>
