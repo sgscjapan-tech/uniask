@@ -938,7 +938,7 @@ function UserMgr() {
   }
 
   const sorted = [...activeUsers]
-    .filter(u=>(u.name+' '+u.email+' '+u.student_code+' '+(sName(u.school_code)||'')).toLowerCase().includes(search.toLowerCase()))
+    .filter(u=>(u.name+' '+u.email+' '+u.student_code+' '+((u.school_code==='PENDING' ? 'PENDING - '+(u.pending_school_name||'') : sName(u.school_code))||'')).toLowerCase().includes(search.toLowerCase()))
     .sort((a,b) => {
       if (sortBy==='name') return (a.name||'').localeCompare(b.name||'')
       if (sortBy==='role') return (a.role||'').localeCompare(b.role||'')
@@ -1006,7 +1006,7 @@ function UserMgr() {
                 <div style={{width:34,height:34,borderRadius:'50%',background:'#EEEDFE',color:'#3C3489',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:500,flexShrink:0}}>{u.name?.slice(0,2).toUpperCase()}</div>
                 <div style={{flex:1,minWidth:0}}>
                   <p style={{fontSize:13,fontWeight:500}}>{u.name}</p>
-                  <p style={{fontSize:12,color:'#999'}}>{u.email} · {u.school_code==='PENDING' ? '⏳ Pending — '+( u.pending_school_name||'no school') : sName(u.school_code)}</p>
+                  <p style={{fontSize:12,color:'#999'}}>{u.email} · {u.school_code==='PENDING' ? '⏳ Pending — '+( u.pending_school_name||'no school') : (u.school_code==='PENDING' ? 'PENDING - '+(u.pending_school_name||'') : sName(u.school_code))}</p>
                 </div>
                 <code style={{background:'#f5f4ed',padding:'2px 6px',borderRadius:6,fontSize:11}}>{u.student_code}</code>
                 <span style={{...s.chip,background:u.role==='admin'?'#EEEDFE':u.role==='alumni'?'#EAF3DE':'#E6F1FB',color:u.role==='admin'?'#3C3489':u.role==='alumni'?'#085041':'#0C447C'}}>{u.role}</span>
