@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -6,10 +6,47 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpheXJkeWthZnhuYXFvemFnc2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODA2MzgsImV4cCI6MjA5MjI1NjYzOH0.feZ0XfYrBaIrsPC92Do8q59t-O-3gh0I2rbt2sJvq8k'
 )
 
+
+const LangContext = createContext('en')
+const useLang = () => useContext(LangContext)
+const TR = {
+  en: { logout:'Log out', translate:'Translate', showOriginal:'Show original', translating:'Translating…' },
+  ja: { logout:'ログアウト', translate:'翻訳', showOriginal:'原文を表示', translating:'翻訳中…' }
+}
+const t = (lang, key) => TR[lang]?.[key] || TR.en[key] || key
+
+function TranslateBtn({ text, lang }) {
+  const [translated, setTranslated] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [showing, setShowing] = useState(false)
+  const translate = async () => {
+    if (showing) { setShowing(false); return }
+    if (translated) { setShowing(true); return }
+    setBusy(true)
+    const from = lang==='ja'?'en':'ja', to = lang==='ja'?'ja':'en'
+    try {
+      const res = await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+from+'|'+to)
+      const data = await res.json()
+      setTranslated(data.responseData?.translatedText || text)
+      setShowing(true)
+    } catch { setTranslated('Translation failed') }
+    setBusy(false)
+  }
+  return (
+    <div style={{marginTop:6}}>
+      <button style={{fontSize:11,color:'#534AB7',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}} onClick={translate}>
+        {busy ? t(lang,'translating') : showing ? t(lang,'showOriginal') : t(lang,'translate')}
+      </button>
+      {showing && translated && <p style={{fontSize:13,lineHeight:1.7,marginTop:4,color:'#444',background:'#f5f4ed',padding:'8px 12px',borderRadius:6}}>{translated}</p>}
+    </div>
+  )
+}
+
 export default function App() {
   const [session, setSession] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [lang, setLang] = useState('en')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -47,7 +84,8 @@ export default function App() {
         <div style={s.row}>
           <span style={{fontSize:12,color:'#666',marginRight:8}}>{profile.name}</span>
           <span style={{...s.chip, background:'#EEEDFE', color:'#3C3489', marginRight:8}}>{profile.role}</span>
-          <button style={s.btn} onClick={logout}>Log out</button>
+          <button style={{...s.btn,marginRight:8,fontSize:12}} onClick={()=>setLang(l=>l==='en'?'ja':'en')}>{lang==='en'?'🇯🇵 JP':'🇬🇧 EN'}</button>
+          <button style={s.btn} onClick={logout}>{t(lang,'logout')}</button>
         </div>
       </div>
       {profile.role === 'student' && <StudentApp profile={profile} updateProfile={updateProfile} />}
@@ -64,8 +102,6 @@ function AuthPage() {
   const [pw, setPw] = useState('')
   const [name, setName] = useState('')
   const [code, setCode] = useState('')
-  const [schoolName, setSchoolName] = useState('')
-  const [noCode, setNoCode] = useState(false)
   const [msg, setMsg] = useState('')
   const [ok, setOk] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -77,25 +113,16 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password: pw })
       if (error) { setMsg(error.message); setBusy(false) }
     } else {
-      if (!name) { setMsg('All fields required'); setBusy(false); return }
-      if (role === 'admin') {
-        if (code !== 'wawa12242007') { setMsg('Invalid admin code'); setBusy(false); return }
-      } else if (noCode && role !== 'admin') {
-        // Request school — submit to pending_schools and stop
-        if (!schoolName.trim()) { setMsg('Please enter your school name'); setBusy(false); return }
-        const sc2 = (role==='alumni'?'ALM-':'STU-')+String(Math.floor(Math.random()*9000)+1000)
-        const {error:e2} = await supabase.auth.signUp({email, password:pw, options:{data:{name,role,school_code:'PENDING',student_code:sc2,pending_school_name:schoolName.trim()}}})
-        if(e2){setMsg(e2.message);setBusy(false);return}
-        setMsg('Registered! You can log in while your school is being reviewed.');setOk(true);setBusy(false);return
-      } else {
-        if (!code) { setMsg('Please enter a school code or select "I don\'t have a code"'); setBusy(false); return }
+      if (!name || !code) { setMsg('All fields required'); setBusy(false); return }
+      if (role === 'admin' && code !== 'WaWaWaWa') { setMsg('Invalid admin code'); setBusy(false); return }
+      if (role !== 'admin') {
         const { data: school } = await supabase.from('schools').select('id').eq('code', code).single()
         if (!school) { setMsg('School code not found'); setBusy(false); return }
       }
       const sc = (role === 'admin' ? 'ADM-' : role === 'alumni' ? 'ALM-' : 'STU-') + String(Math.floor(Math.random()*9000)+1000)
       const { error } = await supabase.auth.signUp({ email, password: pw, options: { data: { name, role, school_code: code, student_code: sc } } })
       if (error) setMsg(error.message)
-      else { setMsg('Registered! You can now log in.'); setOk(true) }
+      else { setMsg('Check your email to confirm your account!'); setOk(true) }
       setBusy(false)
     }
   }
@@ -115,28 +142,14 @@ function AuthPage() {
           </div>
           <div style={{...s.row,gap:4,marginBottom:14}}>
             {['student','alumni','admin'].map(r => (
-              <button key={r} onClick={() => { setRole(r); setNoCode(false) }} style={{...s.btn, flex:1, fontSize:12, background: role===r ? '#EEEDFE':'transparent', color: role===r ? '#3C3489':'#666', borderColor: role===r ? '#AFA9EC':'rgba(0,0,0,0.2)'}}>{r === 'student' ? 'student/parent' : r}</button>
+              <button key={r} onClick={() => setRole(r)} style={{...s.btn, flex:1, fontSize:12, background: role===r ? '#EEEDFE':'transparent', color: role===r ? '#3C3489':'#666', borderColor: role===r ? '#AFA9EC':'rgba(0,0,0,0.2)'}}>{r}</button>
             ))}
           </div>
           <div style={s.stack}>
             {mode==='register' && <Inp label="Full name" value={name} onChange={setName} />}
             <Inp label="Email" value={email} onChange={setEmail} placeholder="your@email.com" />
             <Inp label="Password" type="password" value={pw} onChange={setPw} placeholder="••••••••" onKeyDown={e => e.key==='Enter' && go()} />
-            {role !== 'admin' && mode === 'register' && !noCode && (
-              <div>
-                <Inp label="School code" value={code} onChange={setCode} placeholder="e.g. 12345" />
-                <button style={{fontSize:12,color:'#534AB7',background:'none',border:'none',cursor:'pointer',padding:'4px 0',marginTop:4}} onClick={()=>setNoCode(true)}>I don't have a school code</button>
-              </div>
-            )}
-            {role !== 'admin' && mode === 'register' && noCode && (
-              <div>
-                <Inp label="Your school name" value={schoolName} onChange={setSchoolName} placeholder="Enter your school's full name" />
-                <button style={{fontSize:12,color:'#534AB7',background:'none',border:'none',cursor:'pointer',padding:'4px 0',marginTop:4}} onClick={()=>setNoCode(false)}>I have a school code</button>
-              </div>
-            )}
-            {(role === 'admin' || mode === 'login') && (
-              <Inp label={role==='admin' ? 'Admin code' : 'School code'} value={code} onChange={setCode} placeholder="" />
-            )}
+            <Inp label={role==='admin' ? 'Admin code' : 'School code'} value={code} onChange={setCode} placeholder={role==='admin' ? 'WaWaWaWa' : 'e.g. 12345'} />
             {msg && <p style={{fontSize:12, color: ok ? '#27500A' : '#A32D2D'}}>{msg}</p>}
             <button style={{...s.btn, background:'#534AB7', color:'#fff', borderColor:'#534AB7', padding:'9px', width:'100%'}} onClick={go} disabled={busy}>{busy ? 'Loading…' : (mode==='login' ? 'Log in' : 'Register')}</button>
           </div>
@@ -256,6 +269,7 @@ function MyQuestions({ profile }) {
           <div style={{background:'#f5f4ed',borderLeft:'3px solid #534AB7',padding:'10px 14px',borderRadius:'0 8px 8px 0'}}>
             <p style={{fontSize:12,color:'#534AB7',fontWeight:500,marginBottom:3}}>{q.answered_by_name} · {fmt(q.answered_at)}</p>
             <p style={{fontSize:13,lineHeight:1.7}}>{q.answer}</p>
+            <TranslateBtn text={q.answer} lang="en" />
           </div>
           {/* Show alumni_answers if any */}
           {q.alumni_answers && q.alumni_answers.length > 0 && (
@@ -397,6 +411,7 @@ function AlumniInbox({ profile, onCount }) {
           <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(sel.created_at)}</span>
         </div>
         <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{sel.question}</p>
+        <TranslateBtn text={sel.question} lang="en" />
         <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'4px 10px'}} onClick={() => reject(sel)}>Cannot answer — reassign</button>
       </div>
       <div style={s.card}>
@@ -802,95 +817,34 @@ function AdminFaq() {
 
 function SchoolMgr() {
   const [schools, setSchools] = useState([])
-  const [pending, setPending] = useState([])
   const [search, setSearch] = useState('')
   const [name, setName] = useState('')
-  const [editingId, setEditingId] = useState(null)
-  const [editName, setEditName] = useState('')
-  const [editCode, setEditCode] = useState('')
-
-  const loadSchools = () => supabase.from('schools').select('*').order('name').then(({data})=>setSchools(data||[]))
-  const loadPending = () => supabase.from('pending_schools').select('*').order('created_at',{ascending:false}).then(({data})=>setPending(data||[]))
-  useEffect(() => { loadSchools(); loadPending() }, [])
-
+  const load = () => supabase.from('schools').select('*').order('name').then(({data})=>setSchools(data||[]))
+  useEffect(() => { load() }, [])
   const add = async () => {
     if (!name.trim()) return
     const existing = schools.map(s=>s.code)
     let code; do { code=String(Math.floor(Math.random()*90000)+10000) } while(existing.includes(code))
     await supabase.from('schools').insert({name:name.trim(),code})
-    setName(''); loadSchools()
+    setName('');load()
   }
-
-  const approvePending = async (p) => {
-    const existing = schools.map(s=>s.code)
-    let code; do { code=String(Math.floor(Math.random()*90000)+10000) } while(existing.includes(code))
-    await supabase.from('schools').insert({name:p.name,code})
-    await supabase.from('pending_schools').delete().eq('id',p.id)
-    loadSchools(); loadPending()
-  }
-
-  const rejectPending = async (p) => {
-    await supabase.from('pending_schools').delete().eq('id',p.id)
-    loadPending()
-  }
-
-  const saveEdit = async (sch) => {
-    await supabase.from('schools').update({name:editName, code:editCode}).eq('id',sch.id)
-    setEditingId(null); loadSchools()
-  }
-
-  const deleteSchool = async (sch) => {
-    if (!window.confirm('Delete "'+sch.name+'"? This cannot be undone.')) return
-    await supabase.from('schools').delete().eq('id',sch.id)
-    loadSchools()
-  }
-
   const filtered = schools.filter(s=>s.name.toLowerCase().includes(search.toLowerCase()))
-
   return (
-    <div style={s.stack}>
-      {pending.length > 0 && (
-        <div style={{...s.card, borderColor:'#F0B429'}}>
-          <p style={{fontWeight:500,marginBottom:10,color:'#854F0B'}}>⏳ Pending school requests ({pending.length})</p>
-          {pending.map(p => (
-            <div key={p.id} style={{...s.qcard, borderColor:'#F0B429', marginBottom:8}}>
-              <p style={{fontSize:13,fontWeight:500,marginBottom:2}}>{p.name}</p>
-              <p style={{fontSize:12,color:'#666',marginBottom:8}}>Requested by: {p.requested_by_name} ({p.requested_by_email}) · {fmt(p.created_at)}</p>
-              <div style={{display:'flex',gap:6}}>
-                <button style={{...s.btn,...s.pri,fontSize:12,padding:'4px 12px'}} onClick={()=>approvePending(p)}>✓ Approve & generate code</button>
-                <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'4px 12px'}} onClick={()=>rejectPending(p)}>✕ Reject</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      <div style={s.card}>
+    <div>
+      <div style={{...s.card,marginBottom:14}}>
         <p style={{fontWeight:500,marginBottom:10}}>School codes</p>
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search school…" style={{...s.input,marginBottom:10}}/>
         <div style={{border:'0.5px solid rgba(0,0,0,0.14)',borderRadius:8,overflow:'hidden'}}>
           {filtered.map((sch,i)=>(
-            <div key={sch.id} style={{borderTop:i>0?'0.5px solid rgba(0,0,0,0.1)':'none'}}>
-              {editingId===sch.id ? (
-                <div style={{padding:'10px 14px',display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
-                  <input value={editName} onChange={e=>setEditName(e.target.value)} placeholder="School name" style={{...s.input,flex:2,minWidth:120}}/>
-                  <input value={editCode} onChange={e=>setEditCode(e.target.value)} placeholder="Code" style={{...s.input,flex:1,minWidth:80}}/>
-                  <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 10px'}} onClick={()=>saveEdit(sch)}>Save</button>
-                  <button style={{...s.btn,fontSize:12,padding:'5px 10px'}} onClick={()=>setEditingId(null)}>Cancel</button>
-                </div>
-              ) : (
-                <div style={{display:'flex',alignItems:'center',padding:'9px 14px',fontSize:13,gap:8}}>
-                  <span style={{flex:1}}>{sch.name}</span>
-                  <code style={{background:'#f5f4ed',padding:'2px 8px',borderRadius:6,fontSize:12}}>{sch.code}</code>
-                  <button style={{...s.btn,fontSize:11,padding:'3px 8px'}} onClick={()=>{setEditingId(sch.id);setEditName(sch.name);setEditCode(sch.code)}}>Edit</button>
-                  <button style={{...s.btn,fontSize:11,padding:'3px 8px',color:'#A32D2D',borderColor:'#F09595'}} onClick={()=>deleteSchool(sch)}>Delete</button>
-                </div>
-              )}
+            <div key={sch.id} style={{display:'flex',alignItems:'center',padding:'9px 14px',borderTop:i>0?'0.5px solid rgba(0,0,0,0.1)':'none',fontSize:13}}>
+              <span style={{flex:1}}>{sch.name}</span>
+              <code style={{background:'#f5f4ed',padding:'2px 8px',borderRadius:6,fontSize:12}}>{sch.code}</code>
             </div>
           ))}
         </div>
       </div>
       <div style={s.card}>
-        <p style={{fontWeight:500,marginBottom:10}}>Add new school manually</p>
+        <p style={{fontWeight:500,marginBottom:10}}>Add new school</p>
         <div style={{display:'flex',gap:8}}>
           <input value={name} onChange={e=>setName(e.target.value)} placeholder="School name" style={s.input} onKeyDown={e=>e.key==='Enter'&&add()}/>
           <button style={{...s.btn,...s.pri,whiteSpace:'nowrap'}} onClick={add} disabled={!name.trim()}>Generate code</button>
@@ -904,112 +858,26 @@ function UserMgr() {
   const [users, setUsers] = useState([])
   const [schools, setSchools] = useState([])
   const [search, setSearch] = useState('')
-  const [sortBy, setSortBy] = useState('date')
-  const [editingId, setEditingId] = useState(null)
-  const [editVals, setEditVals] = useState({})
-
-  const load = () => {
-    supabase.from('profiles').select('*').then(({data})=>setUsers(data||[]))
+  useEffect(() => {
+    supabase.from('profiles').select('*').order('created_at',{ascending:false}).then(({data})=>setUsers(data||[]))
     supabase.from('schools').select('*').then(({data})=>setSchools(data||[]))
-  }
-  useEffect(() => { load() }, [])
-
+  }, [])
   const sName = code => schools.find(s=>s.code===code)?.name||code
-  const pendingUsers = users.filter(u => u.school_code === 'PENDING')
-  const activeUsers = users.filter(u => u.school_code !== 'PENDING')
-  const approveUser = async (u, schoolCode) => {
-    await supabase.from('profiles').update({ school_code: schoolCode }).eq('id', u.id)
-    load()
-  }
-
-  const deleteUser = async (u) => {
-    if (!window.confirm('Delete '+u.name+'? This removes their profile but NOT their auth account.')) return
-    await supabase.from('profiles').delete().eq('id',u.id)
-    load()
-  }
-
-  const saveEdit = async (u) => {
-    await supabase.from('profiles').update(editVals).eq('id',u.id)
-    setEditingId(null); load()
-  }
-
-  const sorted = [...activeUsers]
-    .filter(u=>(u.name+' '+u.email+' '+u.student_code+' '+((u.school_code==='PENDING' ? 'PENDING - '+(u.pending_school_name||'') : sName(u.school_code))||'')).toLowerCase().includes(search.toLowerCase()))
-    .sort((a,b) => {
-      if (sortBy==='name') return (a.name||'').localeCompare(b.name||'')
-      if (sortBy==='role') return (a.role||'').localeCompare(b.role||'')
-      if (sortBy==='school') return (sName(a.school_code)||'').localeCompare(sName(b.school_code)||'')
-      if (sortBy==='school_role') return (sName(a.school_code)+a.role).localeCompare(sName(b.school_code)+b.role)
-      if (sortBy==='role_school') return (a.role+sName(a.school_code)).localeCompare(b.role+sName(b.school_code))
-      return new Date(b.created_at) - new Date(a.created_at)
-    })
-
-  const sortOptions = [['date','Registration date'],['name','Name (A-Z)'],['role','Role'],['school','School'],['school_role','School + Role'],['role_school','Role + School']]
-
+  const filtered = users.filter(u=>(u.name+' '+u.email+' '+u.student_code).toLowerCase().includes(search.toLowerCase()))
   return (
-    <div style={s.stack}>
-      {pendingUsers.length > 0 && (
-        <div style={{...s.card, borderColor:'#F0B429'}}>
-          <p style={{fontWeight:500,marginBottom:10,color:'#854F0B'}}>⏳ Pending users — no school code ({pendingUsers.length})</p>
-          {pendingUsers.map(u => (
-            <div key={u.id} style={{...s.qcard, borderColor:'#F0B429', marginBottom:8}}>
-              <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
-                <span style={{fontSize:13,fontWeight:500}}>{u.name}</span>
-                <span style={{...s.chip,background:u.role==='alumni'?'#EAF3DE':'#E6F1FB',color:u.role==='alumni'?'#085041':'#0C447C'}}>{u.role}</span>
-              </div>
-              <p style={{fontSize:12,color:'#666',marginBottom:8}}>{u.email} · {u.pending_school_name || ''}</p>
-              <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
-                <select onChange={e=>e.target.value&&approveUser(u,e.target.value)} defaultValue="" style={{...s.input,width:'auto',fontSize:12}}>
-                  <option value="">Assign to school to approve…</option>
-                  {schools.map(sc=><option key={sc.id} value={sc.code}>{sc.name} ({sc.code})</option>)}
-                </select>
-                <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'4px 12px'}} onClick={()=>deleteUser(u)}>✕ Decline</button>
-              </div>
+    <div style={s.card}>
+      <p style={{fontWeight:500,marginBottom:10}}>Registered users</p>
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…" style={{...s.input,marginBottom:10}}/>
+      <div style={{border:'0.5px solid rgba(0,0,0,0.14)',borderRadius:8,overflow:'hidden'}}>
+        {filtered.map((u,i)=>(
+          <div key={u.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 14px',borderTop:i>0?'0.5px solid rgba(0,0,0,0.1)':'none',flexWrap:'wrap'}}>
+            <div style={{width:34,height:34,borderRadius:'50%',background:'#EEEDFE',color:'#3C3489',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:500,flexShrink:0}}>{u.name?.slice(0,2).toUpperCase()}</div>
+            <div style={{flex:1,minWidth:0}}>
+              <p style={{fontSize:13,fontWeight:500}}>{u.name}</p>
+              <p style={{fontSize:12,color:'#999'}}>{u.email} · {sName(u.school_code)}</p>
             </div>
-          ))}
-        </div>
-      )}
-      <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…" style={{...s.input,flex:1,minWidth:160}}/>
-        <select value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{...s.input,width:'auto',flex:1,minWidth:160}}>
-          {sortOptions.map(([v,l])=><option key={v} value={v}>{l}</option>)}
-        </select>
-      </div>
-      <div style={{border:'0.5px solid rgba(0,0,0,0.14)',borderRadius:8,overflow:'hidden',background:'#fff'}}>
-        {sorted.map((u,i)=>(
-          <div key={u.id} style={{borderTop:i>0?'0.5px solid rgba(0,0,0,0.1)':'none'}}>
-            {editingId===u.id ? (
-              <div style={{padding:'10px 14px',display:'flex',flexDirection:'column',gap:8}}>
-                <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                  <input value={editVals.name||''} onChange={e=>setEditVals(v=>({...v,name:e.target.value}))} placeholder="Name" style={{...s.input,flex:1,minWidth:120}}/>
-                  <input value={editVals.email||''} onChange={e=>setEditVals(v=>({...v,email:e.target.value}))} placeholder="Email" style={{...s.input,flex:2,minWidth:140}}/>
-                </div>
-                <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
-                  <select value={editVals.role||''} onChange={e=>setEditVals(v=>({...v,role:e.target.value}))} style={{...s.input,flex:1,minWidth:100}}>
-                    <option value="student">student</option>
-                    <option value="alumni">alumni</option>
-                    <option value="admin">admin</option>
-                  </select>
-                  <input value={editVals.school_code||''} onChange={e=>setEditVals(v=>({...v,school_code:e.target.value}))} placeholder="School code" style={{...s.input,flex:1,minWidth:100}}/>
-                </div>
-                <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
-                  <button style={s.btn} onClick={()=>setEditingId(null)}>Cancel</button>
-                  <button style={{...s.btn,...s.pri}} onClick={()=>saveEdit(u)}>Save</button>
-                </div>
-              </div>
-            ) : (
-              <div style={{display:'flex',alignItems:'center',gap:10,padding:'9px 14px',flexWrap:'wrap'}}>
-                <div style={{width:34,height:34,borderRadius:'50%',background:'#EEEDFE',color:'#3C3489',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:500,flexShrink:0}}>{u.name?.slice(0,2).toUpperCase()}</div>
-                <div style={{flex:1,minWidth:0}}>
-                  <p style={{fontSize:13,fontWeight:500}}>{u.name}</p>
-                  <p style={{fontSize:12,color:'#999'}}>{u.email} · {u.school_code==='PENDING' ? '⏳ Pending — '+( u.pending_school_name||'no school') : (u.school_code==='PENDING' ? 'PENDING - '+(u.pending_school_name||'') : sName(u.school_code))}</p>
-                </div>
-                <code style={{background:'#f5f4ed',padding:'2px 6px',borderRadius:6,fontSize:11}}>{u.student_code}</code>
-                <span style={{...s.chip,background:u.role==='admin'?'#EEEDFE':u.role==='alumni'?'#EAF3DE':'#E6F1FB',color:u.role==='admin'?'#3C3489':u.role==='alumni'?'#085041':'#0C447C'}}>{u.role}</span>
-                <button style={{...s.btn,fontSize:11,padding:'3px 8px'}} onClick={()=>{setEditingId(u.id);setEditVals({name:u.name,email:u.email,role:u.role,school_code:u.school_code})}}>Edit</button>
-                <button style={{...s.btn,fontSize:11,padding:'3px 8px',color:'#A32D2D',borderColor:'#F09595'}} onClick={()=>deleteUser(u)}>Delete</button>
-              </div>
-            )}
+            <code style={{background:'#f5f4ed',padding:'2px 6px',borderRadius:6,fontSize:11}}>{u.student_code}</code>
+            <span style={{...s.chip,background:u.role==='admin'?'#EEEDFE':u.role==='alumni'?'#EAF3DE':'#E6F1FB',color:u.role==='admin'?'#3C3489':u.role==='alumni'?'#085041':'#0C447C'}}>{u.role}</span>
           </div>
         ))}
       </div>
@@ -1103,4 +971,3 @@ const s = {
   lbl:     { fontSize:12, color:'#666', marginBottom:4, display:'block', fontWeight:500 },
   empty:   { textAlign:'center', padding:'2.5rem', color:'#999', fontSize:13 },
 }
- 
