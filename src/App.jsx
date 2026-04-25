@@ -815,7 +815,7 @@ function AdminFaq() {
             </div>
             {editing===q.id?(
               <div style={s.stack}>
-                <input value={ef.q} onChange={e=>setEf(x=>({...x,q:e.target.value}))} placeholder=t(lang,"ask") style={s.input}/>
+                <input value={ef.q} onChange={e=>setEf(x=>({...x,q:e.target.value}))} placeholder="Question" style={s.input}/>
                 <input value={ef.cat} onChange={e=>setEf(x=>({...x,cat:e.target.value}))} placeholder="Category" style={s.input}/>
                 <textarea value={ef.a} onChange={e=>setEf(x=>({...x,a:e.target.value}))} rows={3} style={s.input}/>
                 <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
