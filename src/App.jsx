@@ -963,8 +963,8 @@ function UserMgr() {
               </div>
               <p style={{fontSize:12,color:'#666',marginBottom:8}}>{u.email} · {u.pending_school_name || ''}</p>
               <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center'}}>
-                <select onChange={e=>e.target.value&&approveUser(u,e.target.value)} defaultValue= style={{...s.input,width:'auto',fontSize:12}}>
-                  <option value=>Assign to school to approve…</option>
+                <select onChange={e=>e.target.value&&approveUser(u,e.target.value)} defaultValue="" style={{...s.input,width:'auto',fontSize:12}}>
+                  <option value="">Assign to school to approve…</option>
                   {schools.map(sc=><option key={sc.id} value={sc.code}>{sc.name} ({sc.code})</option>)}
                 </select>
                 <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'4px 12px'}} onClick={()=>deleteUser(u)}>✕ Decline</button>
