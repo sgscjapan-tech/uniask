@@ -20,9 +20,9 @@ const TR = {
     whoAsking:'Who are you asking? (optional)', typeQuestion:'Type your question here…',
     questionSubmitted:'Question submitted!', notified:'You will be notified when answered.',
     viewMyQ:'View my questions', noAssigned:'No questions assigned yet', noPastAnswers:'No past answers yet',
-    reminderSent:'Reminder sent', openToAlumni:'Open to all alumni', noOpenQ:'No open questions right now',
+    reminderSent:'Reminder sent', openToAlumni:t(lang,'openToAlumni'), noOpenQ:'No open questions right now',
     openForAlumni:'These questions are open for any alumni to respond to.',
-    edit:'Edit', save:'Save', cancel:'Cancel' },
+    edit:t(lang,'edit'), save:t(lang,'save'), cancel:t(lang,'cancel') },
   ja: { logout:'ログアウト', translate:'翻訳', showOriginal:'原文を表示', translating:'翻訳中…',
     ask:'質問する', myq:'自分の質問', faq:'よくある質問', settings:'設定', inbox:'受信箱',
     past:'過去の回答', openQ:'全員への質問', allQ:'全質問', schools:'学校', users:'ユーザー',
@@ -35,7 +35,7 @@ const TR = {
     viewMyQ:'自分の質問を見る', noAssigned:'まだ割り当てられた質問がありません', noPastAnswers:'過去の回答はまだありません',
     reminderSent:'リマインダー送信済み', openToAlumni:'全卒業生に公開', noOpenQ:'現在公開中の質問はありません',
     openForAlumni:'これらの質問はすべての卒業生が回答できます。',
-    edit:'編集', save:'保存', cancel:'キャンセル' }
+    edit:'編集', save:'保存', cancel:'キャンセル', openToAlumni:'全卒業生に公開', editProfile:'プロフィール編集', fullName:'フルネーム', newPassword:'新しいパスワード', deleteAccount:'アカウント削除' }
 }
 const t = (lang, key) => TR[lang]?.[key] || TR.en[key] || key
 
@@ -232,7 +232,7 @@ function AskForm({ profile, onDone }) {
           <input value={target} onChange={e=>setTarget(e.target.value)} placeholder={t(lang,'whoAsking')} style={s.input}/>
         </div>
         <div>
-          <label style={s.lbl}>Question</label>
+          <label style={s.lbl}>{t(lang,'ask')}</label>
           <textarea value={question} onChange={e=>setQuestion(e.target.value)} rows={5} placeholder={t(lang,'typeQuestion')} style={s.input} />
         </div>
         <div style={{display:'flex',justifyContent:'flex-end'}}>
@@ -270,7 +270,7 @@ function MyQuestions({ profile }) {
   return (
     <div>
       <div style={{display:'flex',gap:6,marginBottom:14}}>
-        {[['waiting',t(lang,'unanswered'),waiting.length],['answered','Answered',answered.length]].map(([k,label,cnt]) => (
+        {[['waiting',t(lang,'unanswered'),waiting.length],['answered',t(lang,'answered'),answered.length]].map(([k,label,cnt]) => (
           <button key={k} style={{...s.btn, background:tab===k?'#534AB7':'transparent', color:tab===k?'#fff':'#1a1a1a', borderColor:tab===k?'#534AB7':'rgba(0,0,0,0.28)', borderRadius:20, padding:'5px 14px'}} onClick={() => setTab(k)}>{label}{cnt>0 && <span style={{background:'rgba(255,255,255,0.3)',borderRadius:10,padding:'0 6px',fontSize:11,marginLeft:4}}>{cnt}</span>}</button>
         ))}
       </div>
@@ -278,7 +278,7 @@ function MyQuestions({ profile }) {
         <div key={q.id} style={s.qcard}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
             <span style={{...s.chip,background:q.status==='assigned'?'#FAEEDA':'#E6F1FB',color:q.status==='assigned'?'#633806':'#0C447C'}}>{q.status==='assigned'?t(lang,'inProgress'):t(lang,'waiting')}</span>
-            {q.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>}
+            {q.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>{t(lang,'openToAlumni')}</span>}
             <span style={{fontSize:12,color:'#999'}}>To: {q.target_name}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
           </div>
@@ -815,7 +815,7 @@ function AdminFaq() {
             </div>
             {editing===q.id?(
               <div style={s.stack}>
-                <input value={ef.q} onChange={e=>setEf(x=>({...x,q:e.target.value}))} placeholder="Question" style={s.input}/>
+                <input value={ef.q} onChange={e=>setEf(x=>({...x,q:e.target.value}))} placeholder=t(lang,"ask") style={s.input}/>
                 <input value={ef.cat} onChange={e=>setEf(x=>({...x,cat:e.target.value}))} placeholder="Category" style={s.input}/>
                 <textarea value={ef.a} onChange={e=>setEf(x=>({...x,a:e.target.value}))} rows={3} style={s.input}/>
                 <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
@@ -933,7 +933,7 @@ function ProfileSettings({ profile, updateProfile }) {
   return (
     <div style={s.stack}>
       <div style={s.card}>
-        <p style={{fontWeight:500,marginBottom:12}}>Edit profile</p>
+        <p style={{fontWeight:500,marginBottom:12}}>{t(lang,'editProfile')}</p>
         <div style={s.stack}>
           {[['name','Full name',name,setName],['email','Email',email,setEmail]].map(([field,label,val,setVal])=>(
             <div key={field}>
@@ -945,7 +945,7 @@ function ProfileSettings({ profile, updateProfile }) {
             </div>
           ))}
           <div>
-            <label style={s.lbl}>New password</label>
+            <label style={s.lbl}>{t(lang,'newPassword')}</label>
             <div style={{display:'flex',gap:8}}>
               <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Leave blank to keep current" style={s.input}/>
               <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={()=>save('pw')} disabled={!pw}>{saved==='pw'?'Saved!':'Save'}</button>
@@ -955,7 +955,7 @@ function ProfileSettings({ profile, updateProfile }) {
         </div>
       </div>
       <div style={{...s.card,borderColor:'#F09595'}}>
-        <p style={{fontWeight:500,color:'#A32D2D',marginBottom:6}}>Delete account</p>
+        <p style={{fontWeight:500,color:'#A32D2D',marginBottom:6}}>{t(lang,'deleteAccount')}</p>
         <p style={{fontSize:12,color:'#666',marginBottom:10}}>Type DELETE to confirm. Cannot be undone.</p>
         <div style={{display:'flex',gap:8}}>
           <input value={del} onChange={e=>setDel(e.target.value)} placeholder="DELETE" style={{...s.input,maxWidth:140}}/>
