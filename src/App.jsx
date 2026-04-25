@@ -10,8 +10,32 @@ const supabase = createClient(
 const LangContext = createContext('en')
 const useLang = () => useContext(LangContext)
 const TR = {
-  en: { logout:'Log out', translate:'Translate', showOriginal:'Show original', translating:'Translating…' },
-  ja: { logout:'ログアウト', translate:'翻訳', showOriginal:'原文を表示', translating:'翻訳中…' }
+  en: { logout:'Log out', translate:'Translate', showOriginal:'Show original', translating:'Translating…',
+    ask:'Ask a question', myq:'My questions', faq:'FAQ', settings:'Settings', inbox:'Inbox',
+    past:'Past answers', openQ:'Open Questions', allQ:'All questions', schools:'Schools', users:'Users',
+    submit:'Submit question', sending:'Sending…', answered:'Answered', waiting:'Waiting',
+    inProgress:'In progress', unanswered:'Unanswered', noQYet:'No questions yet',
+    noAnswered:'No answered questions yet', sendReminder:'Send reminder', sendAnswer:'Send answer',
+    back:'← Back', cannotAnswer:'Cannot answer — reassign', addResponse:'Add your response',
+    whoAsking:'Who are you asking? (optional)', typeQuestion:'Type your question here…',
+    questionSubmitted:'Question submitted!', notified:'You will be notified when answered.',
+    viewMyQ:'View my questions', noAssigned:'No questions assigned yet', noPastAnswers:'No past answers yet',
+    reminderSent:'Reminder sent', openToAlumni:'Open to all alumni', noOpenQ:'No open questions right now',
+    openForAlumni:'These questions are open for any alumni to respond to.',
+    edit:'Edit', save:'Save', cancel:'Cancel' },
+  ja: { logout:'ログアウト', translate:'翻訳', showOriginal:'原文を表示', translating:'翻訳中…',
+    ask:'質問する', myq:'自分の質問', faq:'よくある質問', settings:'設定', inbox:'受信箱',
+    past:'過去の回答', openQ:'全員への質問', allQ:'全質問', schools:'学校', users:'ユーザー',
+    submit:'質問を送信', sending:'送信中…', answered:'回答済み', waiting:'待機中',
+    inProgress:'対応中', unanswered:'未回答', noQYet:'まだ質問がありません',
+    noAnswered:'回答済みの質問はまだありません', sendReminder:'リマインダーを送る', sendAnswer:'回答を送る',
+    back:'← 戻る', cannotAnswer:'回答不可 — 再割当て', addResponse:'回答を追加する',
+    whoAsking:'誰に聞きますか？（任意）', typeQuestion:'ここに質問を入力…',
+    questionSubmitted:'質問が送信されました！', notified:'回答が来たらお知らせします。',
+    viewMyQ:'自分の質問を見る', noAssigned:'まだ割り当てられた質問がありません', noPastAnswers:'過去の回答はまだありません',
+    reminderSent:'リマインダー送信済み', openToAlumni:'全卒業生に公開', noOpenQ:'現在公開中の質問はありません',
+    openForAlumni:'これらの質問はすべての卒業生が回答できます。',
+    edit:'編集', save:'保存', cancel:'キャンセル' }
 }
 const t = (lang, key) => TR[lang]?.[key] || TR.en[key] || key
 
