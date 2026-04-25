@@ -921,10 +921,6 @@ function UserMgr() {
     await supabase.from('profiles').update({ school_code: schoolCode }).eq('id', u.id)
     load()
   }
-  const approveUser = async (u, schoolCode) => {
-    await supabase.from('profiles').update({ school_code: schoolCode }).eq('id', u.id)
-    load()
-  }
 
   const deleteUser = async (u) => {
     if (!window.confirm('Delete '+u.name+'? This removes their profile but NOT their auth account.')) return
