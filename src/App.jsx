@@ -362,7 +362,7 @@ function AlumniOpenQuestions({ profile, onCount }) {
       <button style={{...s.btn,marginBottom:14}} onClick={() => { setSel(null); setAns('') }}>{t(lang,'back')}</button>
       <div style={{...s.card,marginBottom:12}}>
         <div style={{display:'flex',gap:6,marginBottom:8}}>
-          <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>
+          <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>{t(lang,'openToAlumni')}</span>
           <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(sel.created_at)}</span>
         </div>
         <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{sel.question}</p>
@@ -590,7 +590,7 @@ function AdminAssign({ onCount }) {
   }
 
   const filteredAlumni = alumni.filter(a=>(a.name+' '+a.student_code).toLowerCase().includes(search.toLowerCase()))
-  const tabs = [['open','Unassigned',displayOpen.length],['assigned','In progress',assigned.length],['answered','Answered',answered.length]]
+  const tabs = [['open','Unassigned',displayOpen.length],['assigned','In progress',assigned.length],['answered',t(lang,'answered'),answered.length]]
   const display = sub==='open'?displayOpen:sub==='assigned'?[...assigned].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)):[...answered].sort((a,b)=>new Date(b.answered_at)-new Date(a.answered_at))
 
   if (sel) {
