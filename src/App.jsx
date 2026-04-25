@@ -11,17 +11,17 @@ const LangContext = createContext('en')
 const useLang = () => useContext(LangContext)
 const TR = {
   en: { logout:'Log out', translate:'Translate', showOriginal:'Show original', translating:'Translating…',
-    ask:t(lang,'ask'), myq:'My questions', faq:'FAQ', settings:'Settings', inbox:'Inbox',
+    ask:'Ask a question', myq:'My questions', faq:'FAQ', settings:'Settings', inbox:'Inbox',
     past:'Past answers', openQ:'Open Questions', allQ:'All questions', schools:'Schools', users:'Users',
-    submit:'Submit question', sending:'Sending…', answered:t(lang,'answered'), waiting:'Waiting',
-    inProgress:'In progress', unanswered:'Unanswered', noQYet:t(lang,'noQYet'),
-    noAnswered:t(lang,'noAnswered'), sendReminder:t(lang,'sendReminder'), sendAnswer:t(lang,'sendAnswer'),
-    back:t(lang,'back'), cannotAnswer:t(lang,'cannotAnswer'), addResponse:t(lang,'addResponse'),
-    whoAsking:'Who are you asking? (optional)', typeQuestion:t(lang,'typeQuestion'),
-    questionSubmitted:t(lang,'questionSubmitted'), notified:'You will be notified when answered.',
-    viewMyQ:t(lang,'viewMyQ'), noAssigned:t(lang,'noAssigned'), noPastAnswers:t(lang,'noPastAnswers'),
-    reminderSent:'Reminder sent', openToAlumni:'Open to all alumni', noOpenQ:t(lang,'noOpenQ'),
-    openForAlumni:t(lang,'openForAlumni'),
+    submit:'Submit question', sending:'Sending…', answered:'Answered', waiting:'Waiting',
+    inProgress:'In progress', unanswered:'Unanswered', noQYet:'No questions yet',
+    noAnswered:'No answered questions yet', sendReminder:'Send reminder', sendAnswer:'Send answer',
+    back:'← Back', cannotAnswer:'Cannot answer — reassign', addResponse:'Add your response',
+    whoAsking:'Who are you asking? (optional)', typeQuestion:'Type your question here…',
+    questionSubmitted:'Question submitted!', notified:'You will be notified when answered.',
+    viewMyQ:'View my questions', noAssigned:'No questions assigned yet', noPastAnswers:'No past answers yet',
+    reminderSent:'Reminder sent', openToAlumni:'Open to all alumni', noOpenQ:'No open questions right now',
+    openForAlumni:'These questions are open for any alumni to respond to.',
     edit:'Edit', save:'Save', cancel:'Cancel' },
   ja: { logout:'ログアウト', translate:'翻訳', showOriginal:'原文を表示', translating:'翻訳中…',
     ask:'質問する', myq:'自分の質問', faq:'よくある質問', settings:'設定', inbox:'受信箱',
@@ -270,7 +270,7 @@ function MyQuestions({ profile }) {
   return (
     <div>
       <div style={{display:'flex',gap:6,marginBottom:14}}>
-        {[['waiting',t(lang,'unanswered'),waiting.length],['answered',t(lang,'answered'),answered.length]].map(([k,label,cnt]) => (
+        {[['waiting',t(lang,'unanswered'),waiting.length],['answered','Answered',answered.length]].map(([k,label,cnt]) => (
           <button key={k} style={{...s.btn, background:tab===k?'#534AB7':'transparent', color:tab===k?'#fff':'#1a1a1a', borderColor:tab===k?'#534AB7':'rgba(0,0,0,0.28)', borderRadius:20, padding:'5px 14px'}} onClick={() => setTab(k)}>{label}{cnt>0 && <span style={{background:'rgba(255,255,255,0.3)',borderRadius:10,padding:'0 6px',fontSize:11,marginLeft:4}}>{cnt}</span>}</button>
         ))}
       </div>
@@ -448,7 +448,7 @@ function AlumniInbox({ profile, onCount }) {
         <label style={s.lbl}>Your answer</label>
         <textarea value={ans} onChange={e=>setAns(e.target.value)} rows={5} placeholder="Type your answer…" style={{...s.input,marginTop:6}} />
         <div style={{display:'flex',justifyContent:'flex-end',marginTop:10}}>
-          <button style={{...s.btn,...s.pri}} onClick={send} disabled={!ans.trim()||busy}>{busy?'Sending…':t(lang,'sendAnswer')}</button>
+          <button style={{...s.btn,...s.pri}} onClick={send} disabled={!ans.trim()||busy}>{busy?'Sending…':'Send answer'}</button>
         </div>
       </div>
     </div>
@@ -590,7 +590,7 @@ function AdminAssign({ onCount }) {
   }
 
   const filteredAlumni = alumni.filter(a=>(a.name+' '+a.student_code).toLowerCase().includes(search.toLowerCase()))
-  const tabs = [['open','Unassigned',displayOpen.length],['assigned','In progress',assigned.length],['answered',t(lang,'answered'),answered.length]]
+  const tabs = [['open','Unassigned',displayOpen.length],['assigned','In progress',assigned.length],['answered','Answered',answered.length]]
   const display = sub==='open'?displayOpen:sub==='assigned'?[...assigned].sort((a,b)=>new Date(a.created_at)-new Date(b.created_at)):[...answered].sort((a,b)=>new Date(b.answered_at)-new Date(a.answered_at))
 
   if (sel) {
