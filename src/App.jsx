@@ -75,9 +75,10 @@ export default function App() {
   }
 
   if (loading) return <div style={s.center}><p>Loading…</p></div>
-  if (!session || !profile) return <AuthPage />
+  if (!session || !profile) return <LangContext.Provider value={lang}><AuthPage /></LangContext.Provider>
 
   return (
+    <LangContext.Provider value={lang}>
     <div>
       <div style={s.topbar}>
         <span style={s.logo}>UniAsk</span>
@@ -92,6 +93,7 @@ export default function App() {
       {profile.role === 'alumni'  && <AlumniApp  profile={profile} updateProfile={updateProfile} />}
       {profile.role === 'admin'   && <AdminApp   profile={profile} updateProfile={updateProfile} />}
     </div>
+    </LangContext.Provider>
   )
 }
 
@@ -269,7 +271,7 @@ function MyQuestions({ profile }) {
           <div style={{background:'#f5f4ed',borderLeft:'3px solid #534AB7',padding:'10px 14px',borderRadius:'0 8px 8px 0'}}>
             <p style={{fontSize:12,color:'#534AB7',fontWeight:500,marginBottom:3}}>{q.answered_by_name} · {fmt(q.answered_at)}</p>
             <p style={{fontSize:13,lineHeight:1.7}}>{q.answer}</p>
-            <TranslateBtn text={q.answer} lang="en" />
+            <TranslateBtn text={q.answer} lang={lang} />
           </div>
           {/* Show alumni_answers if any */}
           {q.alumni_answers && q.alumni_answers.length > 0 && (
@@ -411,7 +413,7 @@ function AlumniInbox({ profile, onCount }) {
           <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(sel.created_at)}</span>
         </div>
         <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{sel.question}</p>
-        <TranslateBtn text={sel.question} lang="en" />
+        <TranslateBtn text={sel.question} lang={lang} />
         <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'4px 10px'}} onClick={() => reject(sel)}>Cannot answer — reassign</button>
       </div>
       <div style={s.card}>
