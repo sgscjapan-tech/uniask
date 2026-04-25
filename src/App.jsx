@@ -190,7 +190,7 @@ function StudentApp({ profile, updateProfile }) {
   const [tab, setTab] = useState('ask')
   return (
     <div style={s.page}>
-      <TabBar tabs={[[['ask',t(lang,'ask')],['myq',t(lang,'myq')],['faq',t(lang,'faq')],['settings',t(lang,'settings')]]]} active={tab} onChange={setTab} />
+      <TabBar tabs={[['ask',t(lang,'ask')],['myq',t(lang,'myq')],['faq',t(lang,'faq')],['settings',t(lang,'settings')]]} active={tab} onChange={setTab} />
       {tab==='ask'      && <AskForm profile={profile} onDone={() => setTab('myq')} />}
       {tab==='myq'      && <MyQuestions profile={profile} />}
       {tab==='faq'      && <FaqView />}
