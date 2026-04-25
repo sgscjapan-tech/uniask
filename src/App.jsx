@@ -162,10 +162,11 @@ function AuthPage() {
 }
 
 function StudentApp({ profile, updateProfile }) {
+  const lang = useLang()
   const [tab, setTab] = useState('ask')
   return (
     <div style={s.page}>
-      <TabBar tabs={[['ask','Ask a question'],['myq','My questions'],['faq','FAQ'],['settings','Settings']]} active={tab} onChange={setTab} />
+      <TabBar tabs={[[['ask',t(lang,'ask')],['myq',t(lang,'myq')],['faq',t(lang,'faq')],['settings',t(lang,'settings')]]]} active={tab} onChange={setTab} />
       {tab==='ask'      && <AskForm profile={profile} onDone={() => setTab('myq')} />}
       {tab==='myq'      && <MyQuestions profile={profile} />}
       {tab==='faq'      && <FaqView />}
@@ -175,6 +176,7 @@ function StudentApp({ profile, updateProfile }) {
 }
 
 function AskForm({ profile, onDone }) {
+  const lang = useLang()
   const [question, setQuestion] = useState('')
   const [target, setTarget] = useState('')
   const [busy, setBusy] = useState(false)
@@ -210,7 +212,7 @@ function AskForm({ profile, onDone }) {
           <textarea value={question} onChange={e=>setQuestion(e.target.value)} rows={5} placeholder="Type your question here…" style={s.input} />
         </div>
         <div style={{display:'flex',justifyContent:'flex-end'}}>
-          <button style={{...s.btn,...s.pri}} onClick={submit} disabled={!question.trim()||busy}>{busy?'Sending…':'Submit question'}</button>
+          <button style={{...s.btn,...s.pri}} onClick={submit} disabled={!question.trim()||busy}>{busy?t(lang,'sending'):t(lang,'submit')}</button>
         </div>
       </div>
     </div>
@@ -218,6 +220,7 @@ function AskForm({ profile, onDone }) {
 }
 
 function MyQuestions({ profile }) {
+  const lang = useLang()
   const [tab, setTab] = useState('waiting')
   const [qs, setQs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -243,14 +246,14 @@ function MyQuestions({ profile }) {
   return (
     <div>
       <div style={{display:'flex',gap:6,marginBottom:14}}>
-        {[['waiting','Unanswered',waiting.length],['answered','Answered',answered.length]].map(([k,label,cnt]) => (
+        {[['waiting',t(lang,'unanswered'),waiting.length],['answered','Answered',answered.length]].map(([k,label,cnt]) => (
           <button key={k} style={{...s.btn, background:tab===k?'#534AB7':'transparent', color:tab===k?'#fff':'#1a1a1a', borderColor:tab===k?'#534AB7':'rgba(0,0,0,0.28)', borderRadius:20, padding:'5px 14px'}} onClick={() => setTab(k)}>{label}{cnt>0 && <span style={{background:'rgba(255,255,255,0.3)',borderRadius:10,padding:'0 6px',fontSize:11,marginLeft:4}}>{cnt}</span>}</button>
         ))}
       </div>
       {tab==='waiting' && (waiting.length===0 ? <div style={s.empty}>No questions yet</div> : waiting.map(q => (
         <div key={q.id} style={s.qcard}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
-            <span style={{...s.chip,background:q.status==='assigned'?'#FAEEDA':'#E6F1FB',color:q.status==='assigned'?'#633806':'#0C447C'}}>{q.status==='assigned'?'In progress':'Waiting'}</span>
+            <span style={{...s.chip,background:q.status==='assigned'?'#FAEEDA':'#E6F1FB',color:q.status==='assigned'?'#633806':'#0C447C'}}>{q.status==='assigned'?t(lang,'inProgress'):t(lang,'waiting')}</span>
             {q.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>}
             <span style={{fontSize:12,color:'#999'}}>To: {q.target_name}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
@@ -292,12 +295,13 @@ function MyQuestions({ profile }) {
 }
 
 function AlumniApp({ profile, updateProfile }) {
+  const lang = useLang()
   const [tab, setTab] = useState('inbox')
   const [cnt, setCnt] = useState(0)
   const [openCnt, setOpenCnt] = useState(0)
   return (
     <div style={s.page}>
-      <TabBar tabs={[['inbox',`Inbox${cnt>0?' ('+cnt+')':''}`],['open',`Open Questions${openCnt>0?' ('+openCnt+')':''}`],['past','Past answers'],['faq','FAQ'],['settings','Settings']]} active={tab} onChange={setTab} />
+      <TabBar tabs={[['inbox',t(lang,'inbox')+(cnt>0?' ('+cnt+')':'')],['open',t(lang,'openQ')+(openCnt>0?' ('+openCnt+')':'')],['past',t(lang,'past')],['faq',t(lang,'faq')],['settings',t(lang,'settings')]]} active={tab} onChange={setTab} />
       {tab==='inbox'    && <AlumniInbox profile={profile} onCount={setCnt} />}
       {tab==='open'     && <AlumniOpenQuestions profile={profile} onCount={setOpenCnt} />}
       {tab==='past'     && <AlumniPast profile={profile} />}
@@ -444,6 +448,7 @@ function AlumniInbox({ profile, onCount }) {
 }
 
 function AlumniPast({ profile }) {
+  const lang = useLang()
   const [qs, setQs] = useState([])
   const [editing, setEditing] = useState(null)
   const [val, setVal] = useState('')
@@ -485,11 +490,12 @@ function AlumniPast({ profile }) {
 }
 
 function AdminApp({ profile, updateProfile }) {
+  const lang = useLang()
   const [tab, setTab] = useState('assign')
   const [cnt, setCnt] = useState(0)
   return (
     <div style={s.page}>
-      <TabBar tabs={[['assign',`Inbox${cnt>0?' ('+cnt+')':''}`],['allq','All questions'],['faq','FAQ'],['schools','Schools'],['users','Users'],['settings','Settings']]} active={tab} onChange={setTab} />
+      <TabBar tabs={[['assign',t(lang,'inbox')+(cnt>0?' ('+cnt+')':'')],['allq',t(lang,'allQ')],['faq',t(lang,'faq')],['schools',t(lang,'schools')],['users',t(lang,'users')],['settings',t(lang,'settings')]]} active={tab} onChange={setTab} />
       {tab==='assign'   && <AdminAssign onCount={setCnt} />}
       {tab==='allq'     && <AdminAllQ />}
       {tab==='faq'      && <AdminFaq />}
