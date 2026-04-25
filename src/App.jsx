@@ -217,23 +217,23 @@ function AskForm({ profile, onDone }) {
   if (done) return (
     <div style={{...s.card, textAlign:'center', padding:'2rem'}}>
       <div style={{width:48,height:48,background:'#EAF3DE',borderRadius:'50%',margin:'0 auto 12px',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,color:'#27500A'}}>✓</div>
-      <p style={{fontWeight:500,marginBottom:8}}>Question submitted!</p>
-      <p style={{color:'#666',fontSize:13,marginBottom:16}}>You'll be notified by email when answered.</p>
-      <button style={{...s.btn,...s.pri}} onClick={() => { setDone(false); setQuestion(''); setTarget(''); onDone() }}>View my questions</button>
+      <p style={{fontWeight:500,marginBottom:8}}>{t(lang,'questionSubmitted')}</p>
+      <p style={{color:'#666',fontSize:13,marginBottom:16}}>{t(lang,'notified')}</p>
+      <button style={{...s.btn,...s.pri}} onClick={() => { setDone(false); setQuestion(''); setTarget(''); onDone() }}>{t(lang,'viewMyQ')}</button>
     </div>
   )
 
   return (
     <div style={s.card}>
-      <p style={{fontWeight:500,marginBottom:14}}>Ask a question</p>
+      <p style={{fontWeight:500,marginBottom:14}}>{t(lang,'ask')}</p>
       <div style={s.stack}>
         <div>
-          <label style={s.lbl}>Who are you asking? (optional — leave blank for anyone)</label>
-          <input value={target} onChange={e=>setTarget(e.target.value)} placeholder="Type a name, or leave blank for anyone" style={s.input}/>
+          <label style={s.lbl}>{t(lang,'whoAsking')}</label>
+          <input value={target} onChange={e=>setTarget(e.target.value)} placeholder={t(lang,'whoAsking')} style={s.input}/>
         </div>
         <div>
           <label style={s.lbl}>Question</label>
-          <textarea value={question} onChange={e=>setQuestion(e.target.value)} rows={5} placeholder="Type your question here…" style={s.input} />
+          <textarea value={question} onChange={e=>setQuestion(e.target.value)} rows={5} placeholder={t(lang,'typeQuestion')} style={s.input} />
         </div>
         <div style={{display:'flex',justifyContent:'flex-end'}}>
           <button style={{...s.btn,...s.pri}} onClick={submit} disabled={!question.trim()||busy}>{busy?t(lang,'sending'):t(lang,'submit')}</button>
@@ -274,7 +274,7 @@ function MyQuestions({ profile }) {
           <button key={k} style={{...s.btn, background:tab===k?'#534AB7':'transparent', color:tab===k?'#fff':'#1a1a1a', borderColor:tab===k?'#534AB7':'rgba(0,0,0,0.28)', borderRadius:20, padding:'5px 14px'}} onClick={() => setTab(k)}>{label}{cnt>0 && <span style={{background:'rgba(255,255,255,0.3)',borderRadius:10,padding:'0 6px',fontSize:11,marginLeft:4}}>{cnt}</span>}</button>
         ))}
       </div>
-      {tab==='waiting' && (waiting.length===0 ? <div style={s.empty}>No questions yet</div> : waiting.map(q => (
+      {tab==='waiting' && (waiting.length===0 ? <div style={s.empty}>{t(lang,'noQYet')}</div> : waiting.map(q => (
         <div key={q.id} style={s.qcard}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
             <span style={{...s.chip,background:q.status==='assigned'?'#FAEEDA':'#E6F1FB',color:q.status==='assigned'?'#633806':'#0C447C'}}>{q.status==='assigned'?t(lang,'inProgress'):t(lang,'waiting')}</span>
@@ -283,10 +283,10 @@ function MyQuestions({ profile }) {
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
           </div>
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{q.question}</p>
-          <button style={{...s.btn,background:'#854F0B',color:'#fff',borderColor:'#854F0B',padding:'4px 10px',fontSize:12}} onClick={() => remind(q)}>Send reminder</button>
+          <button style={{...s.btn,background:'#854F0B',color:'#fff',borderColor:'#854F0B',padding:'4px 10px',fontSize:12}} onClick={() => remind(q)}>{t(lang,'sendReminder')}</button>
         </div>
       )))}
-      {tab==='answered' && (answered.length===0 ? <div style={s.empty}>No answered questions yet</div> : answered.map(q => (
+      {tab==='answered' && (answered.length===0 ? <div style={s.empty}>{t(lang,'noAnswered')}</div> : answered.map(q => (
         <div key={q.id} style={s.qcard}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
             <span style={{...s.chip,background:'#EAF3DE',color:'#085041'}}>Answered</span>
@@ -359,7 +359,7 @@ function AlumniOpenQuestions({ profile, onCount }) {
 
   if (sel) return (
     <div>
-      <button style={{...s.btn,marginBottom:14}} onClick={() => { setSel(null); setAns('') }}>← Back</button>
+      <button style={{...s.btn,marginBottom:14}} onClick={() => { setSel(null); setAns('') }}>{t(lang,'back')}</button>
       <div style={{...s.card,marginBottom:12}}>
         <div style={{display:'flex',gap:6,marginBottom:8}}>
           <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>
@@ -380,7 +380,7 @@ function AlumniOpenQuestions({ profile, onCount }) {
         )}
       </div>
       <div style={s.card}>
-        <label style={s.lbl}>Add your response</label>
+        <label style={s.lbl}>{t(lang,'addResponse')}</label>
         <textarea value={ans} onChange={e=>setAns(e.target.value)} rows={5} placeholder="Type your response…" style={{...s.input,marginTop:6}} />
         <div style={{display:'flex',justifyContent:'flex-end',marginTop:10}}>
           <button style={{...s.btn,...s.pri}} onClick={send} disabled={!ans.trim()||busy}>{busy?'Sending…':'Send response'}</button>
@@ -389,9 +389,9 @@ function AlumniOpenQuestions({ profile, onCount }) {
     </div>
   )
 
-  return qs.length===0 ? <div style={s.empty}>No open questions right now</div> : (
+  return qs.length===0 ? <div style={s.empty}>{t(lang,'noOpenQ')}</div> : (
     <div>
-      <p style={{fontSize:13,color:'#666',marginBottom:14}}>These questions are open for any alumni to respond to.</p>
+      <p style={{fontSize:13,color:'#666',marginBottom:14}}>{t(lang,'openForAlumni')}</p>
       {qs.map(q => (
         <div key={q.id} style={{...s.qcard,cursor:'pointer'}} onClick={() => { setSel(q); setAns('') }}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
@@ -442,7 +442,7 @@ function AlumniInbox({ profile, onCount }) {
         </div>
         <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{sel.question}</p>
         <TranslateBtn text={sel.question} lang={lang} />
-        <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'4px 10px'}} onClick={() => reject(sel)}>Cannot answer — reassign</button>
+        <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'4px 10px'}} onClick={() => reject(sel)}>{t(lang,'cannotAnswer')}</button>
       </div>
       <div style={s.card}>
         <label style={s.lbl}>Your answer</label>
@@ -454,7 +454,7 @@ function AlumniInbox({ profile, onCount }) {
     </div>
   )
 
-  return qs.length===0 ? <div style={s.empty}>No questions assigned yet</div> : (
+  return qs.length===0 ? <div style={s.empty}>{t(lang,'noAssigned')}</div> : (
     <div>
       {qs.map(q => (
         <div key={q.id} style={{...s.qcard,cursor:'pointer'}} onClick={() => { setSel(q); setAns('') }}>
@@ -483,7 +483,7 @@ function AlumniPast({ profile }) {
     await supabase.from('questions').update({answer:val,edits,answered_at:new Date().toISOString(),edited_at:new Date().toISOString()}).eq('id',q.id)
     setEditing(null); load()
   }
-  return qs.length===0 ? <div style={s.empty}>No past answers yet</div> : (
+  return qs.length===0 ? <div style={s.empty}>{t(lang,'noPastAnswers')}</div> : (
     <div>
       {qs.map(q => (
         <div key={q.id} style={s.qcard}>
@@ -658,7 +658,7 @@ function AdminAssign({ onCount }) {
               <label style={s.lbl}>Or answer directly (admin)</label>
               <textarea value={adminAns} onChange={e=>setAdminAns(e.target.value)} rows={4} placeholder="Type answer…" style={{...s.input,marginTop:6}}/>
               <div style={{display:'flex',justifyContent:'flex-end',marginTop:8}}>
-                <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px'}} onClick={doAdminAns} disabled={!adminAns.trim()||busy}>Send answer</button>
+                <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px'}} onClick={doAdminAns} disabled={!adminAns.trim()||busy}>{t(lang,'sendAnswer')}</button>
               </div>
             </div>
           </>
