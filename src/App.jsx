@@ -35,7 +35,7 @@ const TR = {
     viewMyQ:'自分の質問を見る', noAssigned:'まだ割り当てられた質問がありません', noPastAnswers:'過去の回答はまだありません',
     reminderSent:'リマインダー送信済み', openToAlumni:'全卒業生に公開', noOpenQ:'現在公開中の質問はありません',
     openForAlumni:'これらの質問はすべての卒業生が回答できます。',
-    edit:'編集', save:'保存', cancel:'キャンセル', openToAlumni:'全卒業生に公開', editProfile:'プロフィール編集', fullName:'フルネーム', newPassword:'新しいパスワード', deleteAccount:'アカウント削除' }
+    edit:'編集', save:'保存', cancel:'キャンセル', delete:'削除', editProfile:'プロフィール編集', fullName:'フルネーム', email:'メールアドレス', newPassword:'新しいパスワード', deleteAccount:'アカウント削除', openToAlumni:'全卒業生に公開', openToAlumni:'全卒業生に公開', editProfile:'プロフィール編集', fullName:'フルネーム', newPassword:'新しいパスワード', deleteAccount:'アカウント削除' }
 }
 const t = (lang, key) => TR[lang]?.[key] || TR.en[key] || key
 
@@ -395,7 +395,7 @@ function AlumniOpenQuestions({ profile, onCount }) {
       {qs.map(q => (
         <div key={q.id} style={{...s.qcard,cursor:'pointer'}} onClick={() => { setSel(q); setAns('') }}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
-            <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>
+            <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>{t(lang,'openToAlumni')}</span>
             <span style={{fontSize:12,color:'#999'}}>{q.alumni_answers?.length||0} response{q.alumni_answers?.length!==1?'s':''}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
           </div>
@@ -498,7 +498,7 @@ function AlumniPast({ profile }) {
               <textarea value={val} onChange={e=>setVal(e.target.value)} rows={4} style={{...s.input,marginBottom:8}}/>
               <div style={{display:'flex',gap:6,justifyContent:'flex-end'}}>
                 <button style={s.btn} onClick={()=>setEditing(null)}>Cancel</button>
-                <button style={{...s.btn,...s.pri}} onClick={()=>saveEdit(q)}>Save</button>
+                <button style={{...s.btn,...s.pri}} onClick={()=>saveEdit(q)}>{t(lang,'save')}</button>
               </div>
             </div>
           ) : (
@@ -602,7 +602,7 @@ function AdminAssign({ onCount }) {
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:8}}>
             <span style={{...s.chip,background:fq.status==='answered'?'#EAF3DE':fq.status==='assigned'?'#FAEEDA':'#E6F1FB',color:fq.status==='answered'?'#085041':fq.status==='assigned'?'#633806':'#0C447C'}}>{fq.status}</span>
             {fq.rejected_by?.length>0 && <span style={{...s.chip,background:'#FCEBEB',color:'#791F1F'}}>Rejected — needs reassign</span>}
-            {fq.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>Open to all alumni</span>}
+            {fq.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>{t(lang,'openToAlumni')}</span>}
             <span style={{fontSize:12,color:'#999'}}>from: {fq.student_name||fq.student_code}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(fq.created_at)}</span>
           </div>
@@ -610,7 +610,7 @@ function AdminAssign({ onCount }) {
           {/* Open to alumni toggle */}
           <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:fq.open_to_alumni?'#EEEDFE':'#f9f9f9',borderRadius:8,border:'0.5px solid rgba(0,0,0,0.1)'}}>
             <div style={{flex:1}}>
-              <p style={{fontSize:13,fontWeight:500,color:fq.open_to_alumni?'#3C3489':'#1a1a1a'}}>Open to all alumni</p>
+              <p style={{fontSize:13,fontWeight:500,color:fq.open_to_alumni?'#3C3489':'#1a1a1a'}}>{t(lang,'openToAlumni')}</p>
               <p style={{fontSize:12,color:'#666'}}>Any alumni can view and respond to this question</p>
             </div>
             <button
@@ -918,6 +918,7 @@ function UserMgr() {
 }
 
 function ProfileSettings({ profile, updateProfile }) {
+  const lang = useLang()
   const [name, setName] = useState(profile.name||'')
   const [email, setEmail] = useState(profile.email||'')
   const [pw, setPw] = useState('')
@@ -956,10 +957,10 @@ function ProfileSettings({ profile, updateProfile }) {
       </div>
       <div style={{...s.card,borderColor:'#F09595'}}>
         <p style={{fontWeight:500,color:'#A32D2D',marginBottom:6}}>{t(lang,'deleteAccount')}</p>
-        <p style={{fontSize:12,color:'#666',marginBottom:10}}>Type DELETE to confirm. Cannot be undone.</p>
+        <p style={{fontSize:12,color:'#666',marginBottom:10}}>{lang==='ja'?'DELETEと入力して確認。取り消せません。':'Type DELETE to confirm. Cannot be undone.'}</p>
         <div style={{display:'flex',gap:8}}>
           <input value={del} onChange={e=>setDel(e.target.value)} placeholder="DELETE" style={{...s.input,maxWidth:140}}/>
-          <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'5px 12px'}} onClick={deleteAcc} disabled={del!=='DELETE'}>Delete</button>
+          <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12,padding:'5px 12px'}} onClick={deleteAcc} disabled={del!=='DELETE'}>{t(lang,'delete')||'Delete'}</button>
         </div>
       </div>
     </div>
