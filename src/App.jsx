@@ -47,8 +47,8 @@ function TranslateBtn({ text, lang }) {
     if (showing) { setShowing(false); return }
     if (translated) { setShowing(true); return }
     setBusy(true)
-    const from = lang==='ja'?'en':'ja'
-    const to = lang==='ja'?'ja':'en'
+    const from = lang==='ja'?'ja':'en'
+    const to = lang==='ja'?'en':'ja'
     try {
       const url = 'https://lingva.ml/api/v1/'+from+'/'+to+'/'+encodeURIComponent(text)
       const res = await fetch(url)
