@@ -279,7 +279,7 @@ function MyQuestions({ profile }) {
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
             <span style={{...s.chip,background:q.status==='assigned'?'#FAEEDA':'#E6F1FB',color:q.status==='assigned'?'#633806':'#0C447C'}}>{q.status==='assigned'?t(lang,'inProgress'):t(lang,'waiting')}</span>
             {q.open_to_alumni && <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>{t(lang,'openToAlumni')}</span>}
-            <span style={{fontSize:12,color:'#999'}}>To: {q.target_name}</span>
+            <span style={{fontSize:12,color:'#999'}}>{lang==='ja'?'宛先: ':'To: '}{q.target_name}</span>
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
           </div>
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{q.question}</p>
@@ -750,13 +750,13 @@ function FaqView() {
   const filtered = search ? faqs.filter(q=>(q.question+' '+(q.answer||'')+' '+(q.faq_category||'')).toLowerCase().includes(search.toLowerCase())) : faqs
   return (
     <div>
-      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search FAQs…" style={{...s.input,marginBottom:14}}/>
+      <input value={search} onChange={e=>setSearch(e.target.value)} placeholder={lang==='ja'?'よくある質問を検索…':'Search FAQs…'} style={{...s.input,marginBottom:14}}/>
       {filtered.length===0?<div style={s.empty}>No FAQs yet</div>:filtered.map(q=>(
         <div key={q.id} style={s.qcard}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:6}}>
             <span style={{...s.chip,background:'#EEEDFE',color:'#3C3489'}}>FAQ</span>
             {q.faq_category&&<span style={{fontSize:12,color:'#999'}}>{q.faq_category}</span>}
-            <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>Posted: {fmt(q.created_at)}{q.edited_at&&` · Edited: ${fmt(q.edited_at)}`}</span>
+            <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>Posted: {fmt(q.created_at)}{q.edited_at&&` · ${lang==='ja'?'編集日':'Edited'}: ${fmt(q.edited_at)}`}</span>
           </div>
           <p style={{fontSize:14,fontWeight:500,lineHeight:1.65,marginBottom:4}}>{q.question}</p>
           <p style={{fontSize:13,color:'#666',lineHeight:1.7}}>{q.answer}</p>
@@ -942,20 +942,20 @@ function ProfileSettings({ profile, updateProfile }) {
       <div style={s.card}>
         <p style={{fontWeight:500,marginBottom:12}}>{t(lang,'editProfile')}</p>
         <div style={s.stack}>
-          {[['name','Full name',name,setName],['email','Email',email,setEmail]].map(([field,label,val,setVal])=>(
+          {[['name',lang==='ja'?'フルネーム':'Full name',name,setName],['email',lang==='ja'?'メールアドレス':'Email',email,setEmail]].map(([field,label,val,setVal])=>(
             <div key={field}>
               <label style={s.lbl}>{label}</label>
               <div style={{display:'flex',gap:8}}>
                 <input value={val} onChange={e=>setVal(e.target.value)} style={s.input}/>
-                <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={()=>save(field)}>{saved===field?'Saved!':'Save'}</button>
+                <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={()=>save(field)}>{saved===field?(lang==='ja'?'保存済み！':'Saved!'):(lang==='ja'?'保存':'Save')}</button>
               </div>
             </div>
           ))}
           <div>
             <label style={s.lbl}>{t(lang,'newPassword')}</label>
             <div style={{display:'flex',gap:8}}>
-              <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder="Leave blank to keep current" style={s.input}/>
-              <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={()=>save('pw')} disabled={!pw}>{saved==='pw'?'Saved!':'Save'}</button>
+              <input type="password" value={pw} onChange={e=>setPw(e.target.value)} placeholder=lang==='ja'?'空白のままにすると変更なし':'Leave blank to keep current' style={s.input}/>
+              <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={()=>save('pw')} disabled={!pw}>{saved==='pw'?(lang==='ja'?'保存済み！':'Saved!'):(lang==='ja'?'保存':'Save')}</button>
             </div>
           </div>
           <p style={{fontSize:12,color:'#999'}}>Code: <code style={{background:'#f5f4ed',padding:'1px 5px',borderRadius:4}}>{profile.student_code}</code></p>
