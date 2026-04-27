@@ -50,17 +50,21 @@ function TranslateBtn({ text, lang }) {
     const from = lang==='ja'?'en':'ja'
     const to = lang==='ja'?'ja':'en'
     try {
-      const url = 'https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+from+'|'+to+'&de=sgscjapan@gmail.com'
+      const url = 'https://lingva.ml/api/v1/'+from+'/'+to+'/'+encodeURIComponent(text)
       const res = await fetch(url)
       const data = await res.json()
-      const result = data.responseData?.translatedText
-      if (result && result !== text && data.responseStatus === 200) {
-        setTranslated(result)
-      } else {
-        setTranslated(lang==='ja' ? '翻訳できませんでした' : 'Could not translate')
-      }
+      const result = data.translation
+      setTranslated(result || (lang==='ja' ? '翻訳できませんでした' : 'Could not translate'))
       setShowing(true)
-    } catch { setTranslated(lang==='ja' ? '翻訳エラー' : 'Translation error') }
+    } catch {
+      try {
+        const url2 = 'https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+from+'|'+to
+        const res2 = await fetch(url2)
+        const data2 = await res2.json()
+        setTranslated(data2.responseData?.translatedText || (lang==='ja' ? '翻訳エラー' : 'Translation error'))
+        setShowing(true)
+      } catch { setTranslated(lang==='ja' ? '翻訳エラー' : 'Translation error') }
+    }
     setBusy(false)
   }
   return (
@@ -290,6 +294,7 @@ function MyQuestions({ profile }) {
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(q.created_at)}</span>
           </div>
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{q.question}</p>
+          <TranslateBtn text={q.question} lang={lang} />
           <button style={{...s.btn,background:'#854F0B',color:'#fff',borderColor:'#854F0B',padding:'4px 10px',fontSize:12}} onClick={() => remind(q)}>{t(lang,'sendReminder')}</button>
         </div>
       )))}
@@ -766,8 +771,9 @@ function FaqView() {
             <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>Posted: {fmt(q.created_at)}{q.edited_at&&` · Edited: ${fmt(q.edited_at)}`}</span>
           </div>
           <p style={{fontSize:14,fontWeight:500,lineHeight:1.65,marginBottom:4}}>{q.question}</p>
-          <p style={{fontSize:13,color:'#666',lineHeight:1.7}}>{q.answer}</p>
-          <TranslateBtn text={q.question+' — '+q.answer} lang={lang} />
+          <TranslateBtn text={q.question} lang={lang} />
+          <p style={{fontSize:13,color:'#666',lineHeight:1.7,marginTop:6}}>{q.answer}</p>
+          <TranslateBtn text={q.answer} lang={lang} />
         </div>
       ))}
     </div>
