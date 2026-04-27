@@ -39,6 +39,29 @@ const TR = {
 }
 const t = (lang, key) => TR[lang]?.[key] || TR.en[key] || key
 
+function BioPop({ code, name, role, bio, lang }) {
+  const [open, setOpen] = useState(false)
+  if (!bio) return <span style={{fontSize:11,color:'#999'}}>{code}</span>
+  return (
+    <span style={{position:'relative',display:'inline-block'}}>
+      <button onClick={()=>setOpen(o=>!o)} style={{fontSize:11,color:'#534AB7',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}}>{code}</button>
+      {open && (
+        <div style={{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',background:'#fff',border:'0.5px solid rgba(0,0,0,0.2)',borderRadius:12,padding:'1rem 1.25rem',zIndex:1000,maxWidth:340,width:'90vw',boxShadow:'0 8px 32px rgba(0,0,0,0.12)'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+            <div>
+              <p style={{fontWeight:500,fontSize:14}}>{name}</p>
+              <span style={{...s.chip,background:role==='alumni'?'#EAF3DE':'#E6F1FB',color:role==='alumni'?'#085041':'#0C447C'}}>{role}</span>
+            </div>
+            <button onClick={()=>setOpen(false)} style={{fontSize:18,background:'none',border:'none',cursor:'pointer',color:'#666'}}>✕</button>
+          </div>
+          <p style={{fontSize:13,lineHeight:1.7,color:'#444',whiteSpace:'pre-wrap'}}>{bio}</p>
+        </div>
+      )}
+      {open && <div onClick={()=>setOpen(false)} style={{position:'fixed',inset:0,zIndex:999}}/>}
+    </span>
+  )
+}
+
 function TranslateBtn({ text, lang }) {
   const [translated, setTranslated] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -213,6 +236,7 @@ function StudentApp({ profile, updateProfile }) {
 function AskForm({ profile, onDone }) {
   const lang = useLang()
   const [question, setQuestion] = useState('')
+  const [shareBio, setShareBio] = useState(true)
   const [target, setTarget] = useState('')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
@@ -221,7 +245,7 @@ function AskForm({ profile, onDone }) {
     if (!question.trim()) return
     setBusy(true)
     const tName = target.trim() || 'Anyone'
-    await supabase.from('questions').insert({ student_id: profile.id, student_code: profile.student_code, question: question.trim(), target_name: tName, status: 'open' })
+    await supabase.from('questions').insert({ student_id: profile.id, student_code: profile.student_code, student_name: profile.name, student_bio: shareBio ? profile.bio : null, question: question.trim(), target_name: tName, status: 'open' })
     setBusy(false); setDone(true)
   }
 
@@ -246,7 +270,8 @@ function AskForm({ profile, onDone }) {
           <label style={s.lbl}>{t(lang,'ask')}</label>
           <textarea value={question} onChange={e=>setQuestion(e.target.value)} rows={5} placeholder={t(lang,'typeQuestion')} style={s.input} />
         </div>
-        <div style={{display:'flex',justifyContent:'flex-end'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <label style={{fontSize:12,color:'#666',display:'flex',alignItems:'center',gap:6,cursor:'pointer'}}><input type='checkbox' checked={shareBio} onChange={e=>setShareBio(e.target.checked)}/>{lang==='ja'?'プロフィールを共有':'Share my profile'}</label>
           <button style={{...s.btn,...s.pri}} onClick={submit} disabled={!question.trim()||busy}>{busy?t(lang,'sending'):t(lang,'submit')}</button>
         </div>
       </div>
@@ -308,7 +333,7 @@ function MyQuestions({ profile }) {
           </div>
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:8}}>{q.question}</p>
           <div style={{background:'#f5f4ed',borderLeft:'3px solid #534AB7',padding:'10px 14px',borderRadius:'0 8px 8px 0'}}>
-            <p style={{fontSize:12,color:'#534AB7',fontWeight:500,marginBottom:3}}>{q.answered_by_name} · {fmt(q.answered_at)}</p>
+            <p style={{fontSize:12,color:'#534AB7',fontWeight:500,marginBottom:3}}><BioPop code={q.answered_by_name} name={q.answered_by_name} role='alumni' bio={q.answered_by_bio} lang={lang}/> · {fmt(q.answered_at)}</p>
             <p style={{fontSize:13,lineHeight:1.7}}>{q.answer}</p>
             <TranslateBtn text={q.answer} lang={lang} />
           </div>
@@ -433,7 +458,7 @@ function AlumniInbox({ profile, onCount }) {
 
   const send = async () => {
     setBusy(true)
-    await supabase.from('questions').update({ status:'answered', answer:ans.trim(), answered_by:profile.id, answered_by_name:'Alumni '+profile.student_code, answered_at:new Date().toISOString() }).eq('id',sel.id)
+    await supabase.from('questions').update({ status:'answered', answer:ans.trim(), answered_by:profile.id, answered_by_name:'Alumni '+profile.student_code, answered_by_bio: shareAns ? profile.bio : null, answered_at:new Date().toISOString() }).eq('id',sel.id)
     setSel(null); setAns(''); setBusy(false); load()
   }
 
@@ -449,7 +474,7 @@ function AlumniInbox({ profile, onCount }) {
       <button style={{...s.btn,marginBottom:14}} onClick={() => { setSel(null); setAns('') }}>← Back</button>
       <div style={{...s.card,marginBottom:12}}>
         <div style={{display:'flex',gap:6,marginBottom:8}}>
-          <span style={{...s.chip,background:'#E6F1FB',color:'#0C447C'}}>Student {sel.student_code}</span>
+          <span style={{...s.chip,background:'#E6F1FB',color:'#0C447C'}}><BioPop code={'Student '+sel.student_code} name={sel.student_name||sel.student_code} role='student' bio={sel.student_bio} lang={lang}/></span>
           <span style={{fontSize:12,color:'#999',marginLeft:'auto'}}>{fmt(sel.created_at)}</span>
         </div>
         <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{sel.question}</p>
@@ -940,6 +965,7 @@ function UserMgr() {
 function ProfileSettings({ profile, updateProfile }) {
   const lang = useLang()
   const [name, setName] = useState(profile.name||'')
+  const [bio, setBio] = useState(profile.bio||'')
   const [email, setEmail] = useState(profile.email||'')
   const [pw, setPw] = useState('')
   const [saved, setSaved] = useState('')
