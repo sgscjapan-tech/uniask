@@ -531,6 +531,7 @@ function AdminApp({ profile, updateProfile }) {
 }
 
 function AdminAssign({ onCount }) {
+  const lang = useLang()
   const [sub, setSub] = useState('open')
   const [qs, setQs] = useState([])
   const [alumni, setAlumni] = useState([])
@@ -717,6 +718,7 @@ function AdminAssign({ onCount }) {
 }
 
 function AdminAllQ() {
+  const lang = useLang()
   const [qs, setQs] = useState([])
   const [search, setSearch] = useState('')
   useEffect(() => { supabase.from('questions').select('*').eq('is_faq',false).order('created_at',{ascending:false}).then(({data})=>setQs(data||[])) }, [])
@@ -741,6 +743,7 @@ function AdminAllQ() {
 }
 
 function FaqView() {
+  const lang = useLang()
   const [faqs, setFaqs] = useState([])
   const [search, setSearch] = useState('')
   useEffect(() => { supabase.from('questions').select('*').eq('is_faq',true).order('created_at',{ascending:false}).then(({data})=>setFaqs(data||[])) }, [])
@@ -764,6 +767,7 @@ function FaqView() {
 }
 
 function AdminFaq() {
+  const lang = useLang()
   const [faqs, setFaqs] = useState([])
   const [allAns, setAllAns] = useState([])
   const [search, setSearch] = useState('')
@@ -848,6 +852,7 @@ function AdminFaq() {
 }
 
 function SchoolMgr() {
+  const lang = useLang()
   const [schools, setSchools] = useState([])
   const [search, setSearch] = useState('')
   const [name, setName] = useState('')
@@ -887,6 +892,7 @@ function SchoolMgr() {
 }
 
 function UserMgr() {
+  const lang = useLang()
   const [users, setUsers] = useState([])
   const [schools, setSchools] = useState([])
   const [search, setSearch] = useState('')
