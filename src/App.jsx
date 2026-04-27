@@ -980,7 +980,7 @@ function ProfileSettings({ profile, updateProfile }) {
   return (
     <div style={s.stack}>
       <div style={s.card}>
-        <p style={{fontWeight:500,marginBottom:12}}>{t(lang,'editProfile')}</p>
+        <p style={{fontWeight:500,marginBottom:12}}>{lang==='ja'?'プロフィール編集':'Edit profile'}</p>
         <div style={s.stack}>
           {[['name','Full name',name,setName],['email','Email',email,setEmail]].map(([field,label,val,setVal])=>(
             <div key={field}>
@@ -992,7 +992,7 @@ function ProfileSettings({ profile, updateProfile }) {
             </div>
           ))}
           <div>
-            <label style={s.lbl}>{t(lang,'newPassword')}</label>
+            <label style={s.lbl}>{lang==='ja'?'新しいパスワード':'New password'}</label>
             <div style={{display:'flex',gap:8}}>
               <input type="password" value={pw} onChange={e=>setPw(e.target.value)} {...(lang==='ja'?{placeholder:'空白のままにすると変更なし'}:{placeholder:'Leave blank to keep current'})} style={s.input}/>
               <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={()=>save('pw')} disabled={!pw}>{saved==='pw'?'Saved!':'Save'}</button>
@@ -1002,7 +1002,7 @@ function ProfileSettings({ profile, updateProfile }) {
         </div>
       </div>
       <div style={{...s.card,borderColor:'#F09595'}}>
-        <p style={{fontWeight:500,color:'#A32D2D',marginBottom:6}}>{t(lang,'deleteAccount')}</p>
+        <p style={{fontWeight:500,color:'#A32D2D',marginBottom:6}}>{lang==='ja'?'アカウント削除':'Delete account'}</p>
         <p style={{fontSize:12,color:'#666',marginBottom:10}}>{lang==='ja'?'DELETEと入力して確認。取り消せません。':'Type DELETE to confirm. Cannot be undone.'}</p>
         <div style={{display:'flex',gap:8}}>
           <input value={del} onChange={e=>setDel(e.target.value)} placeholder="DELETE" style={{...s.input,maxWidth:140}}/>
