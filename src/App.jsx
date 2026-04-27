@@ -47,21 +47,28 @@ function TranslateBtn({ text, lang }) {
     if (showing) { setShowing(false); return }
     if (translated) { setShowing(true); return }
     setBusy(true)
-    const from = lang==='ja'?'en':'ja', to = lang==='ja'?'ja':'en'
+    const from = lang==='ja'?'en':'ja'
+    const to = lang==='ja'?'ja':'en'
     try {
-      const res = await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+from+'|'+to)
+      const url = 'https://api.mymemory.translated.net/get?q='+encodeURIComponent(text)+'&langpair='+from+'|'+to+'&de=sgscjapan@gmail.com'
+      const res = await fetch(url)
       const data = await res.json()
-      setTranslated(data.responseData?.translatedText || text)
+      const result = data.responseData?.translatedText
+      if (result && result !== text && data.responseStatus === 200) {
+        setTranslated(result)
+      } else {
+        setTranslated(lang==='ja' ? '翻訳できませんでした' : 'Could not translate')
+      }
       setShowing(true)
-    } catch { setTranslated('Translation failed') }
+    } catch { setTranslated(lang==='ja' ? '翻訳エラー' : 'Translation error') }
     setBusy(false)
   }
   return (
-    <div style={{marginTop:6}}>
+    <div style={{marginTop:4}}>
       <button style={{fontSize:11,color:'#534AB7',background:'none',border:'none',cursor:'pointer',padding:0,textDecoration:'underline'}} onClick={translate}>
-        {busy ? t(lang,'translating') : showing ? t(lang,'showOriginal') : t(lang,'translate')}
+        {busy ? (lang==='ja'?'翻訳中…':'Translating…') : showing ? (lang==='ja'?'原文を表示':'Show original') : (lang==='ja'?'🌐 翻訳':'🌐 Translate')}
       </button>
-      {showing && translated && <p style={{fontSize:13,lineHeight:1.7,marginTop:4,color:'#444',background:'#f5f4ed',padding:'8px 12px',borderRadius:6}}>{translated}</p>}
+      {showing && translated && <p style={{fontSize:13,lineHeight:1.7,marginTop:4,color:'#444',background:'#f5f4ed',padding:'8px 12px',borderRadius:6,borderLeft:'3px solid #534AB7'}}>{translated}</p>}
     </div>
   )
 }
@@ -760,6 +767,7 @@ function FaqView() {
           </div>
           <p style={{fontSize:14,fontWeight:500,lineHeight:1.65,marginBottom:4}}>{q.question}</p>
           <p style={{fontSize:13,color:'#666',lineHeight:1.7}}>{q.answer}</p>
+          <TranslateBtn text={q.question+' — '+q.answer} lang={lang} />
         </div>
       ))}
     </div>
