@@ -998,6 +998,14 @@ function ProfileSettings({ profile, updateProfile }) {
               <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={()=>save('pw')} disabled={!pw}>{saved==='pw'?'Saved!':'Save'}</button>
             </div>
           </div>
+          <div>
+            <label style={s.lbl}>{lang==='ja'?'自己紹介':'Bio'}</label>
+            <p style={{fontSize:11,color:'#999',marginBottom:4}}>{profile.role==='alumni'?(lang==='ja'?'例：出身高校・大学・専攻・活動など':'e.g. University, major, high school, activities, regions applied to…'):(lang==='ja'?'例：学年・学校・志望校・活動など':'e.g. Grade, school, target universities, interests, activities…')}</p>
+            <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+              <textarea value={bio} onChange={e=>setBio(e.target.value)} rows={4} placeholder={lang==='ja'?'自己紹介を入力…':'Write your bio…'} style={{...s.input,resize:'vertical'}}/>
+              <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={async()=>{await updateProfile({bio});setSaved('bio');setTimeout(()=>setSaved(''),2000)}}>{saved==='bio'?(lang==='ja'?'保存済み！':'Saved!'):(lang==='ja'?'保存':'Save')}</button>
+            </div>
+          </div>
           <p style={{fontSize:12,color:'#999'}}>{lang==='ja'?'コード: ':'Code: '}<code style={{background:'#f5f4ed',padding:'1px 5px',borderRadius:4}}>{profile.student_code}</code></p>
         </div>
       </div>
