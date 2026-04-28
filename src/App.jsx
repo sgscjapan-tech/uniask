@@ -1007,7 +1007,16 @@ function ProfileSettings({ profile, updateProfile }) {
             </div>
           </div>
           <div>
-            <label style={s.lbl}>{lang==='ja'?'自己紹介':'Bio'}</label>
+                      <div>
+            <label style={s.lbl}>{lang==='ja'?'LINE通知':'LINE Notifications'}</label>
+            <p style={{fontSize:11,color:'#999',marginBottom:4}}>{lang==='ja'?'UniAsk LINEボットを友達追加して、受け取ったコードを貼り付けてください':'Add the UniAsk LINE bot as a friend, then paste the code it sends you'}</p>
+            <div style={{display:'flex',gap:8}}>
+              <input value={lineId} onChange={e=>setLineId(e.target.value)} placeholder="U1234..." style={s.input}/>
+              <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={async()=>{await updateProfile({line_id:lineId});setSaved('line');setTimeout(()=>setSaved(''),2000)}}>{saved==='line'?(lang==='ja'?'保存済み！':'Saved!'):(lang==='ja'?'保存':'Save')}</button>
+            </div>
+            {profile.line_id&&<p style={{fontSize:11,color:'#27500A',marginTop:4}}>✓ {lang==='ja'?'LINE連携済み':'LINE connected'}</p>}
+          </div>
+          <label style={s.lbl}>{lang==='ja'?'自己紹介':'Bio'}</label>
             <p style={{fontSize:11,color:'#999',marginBottom:4}}>{profile.role==='alumni'?(lang==='ja'?'例：出身高校・大学・専攻・活動など':'e.g. University, major, high school, activities, regions applied to…'):(lang==='ja'?'例：学年・学校・志望地域/大学・興味ある専攻・活動・奨学金など':'e.g. Grade, school, target regions/unis, interested majors, activities, interested scholarships…')}</p>
             <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
               <textarea value={bio} onChange={e=>setBio(e.target.value)} rows={4} placeholder={lang==='ja'?'自己紹介を入力…':'Write your bio…'} style={{...s.input,resize:'vertical'}}/>
