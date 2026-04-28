@@ -7,12 +7,14 @@ const supabase = createClient(
 )
 
 const notify = async (type, questionId) => {
+  if (!questionId) return
   try {
-    await fetch('https://zayrdykafxnaqozagsll.supabase.co/functions/v1/notify', {
+    const res = await fetch('https://zayrdykafxnaqozagsll.supabase.co/functions/v1/notify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, questionId })
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ type: type, questionId: questionId })
     })
+    console.log('notify response:', res.status)
   } catch(e) { console.log('notify error', e) }
 }
 
