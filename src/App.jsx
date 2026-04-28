@@ -6,6 +6,15 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpheXJkeWthZnhuYXFvemFnc2xsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODA2MzgsImV4cCI6MjA5MjI1NjYzOH0.feZ0XfYrBaIrsPC92Do8q59t-O-3gh0I2rbt2sJvq8k'
 )
 
+const notify = async (type, questionId) => {
+  try {
+    await fetch('https://zayrdykafxnaqozagsll.supabase.co/functions/v1/notify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, questionId })
+    })
+  } catch(e) { console.log('notify error', e) }
+}
 
 const LangContext = createContext('en')
 const useLang = () => useContext(LangContext)
