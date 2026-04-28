@@ -245,7 +245,8 @@ function AskForm({ profile, onDone }) {
     if (!question.trim()) return
     setBusy(true)
     const tName = target.trim() || 'Anyone'
-    await supabase.from('questions').insert({ student_id: profile.id, student_code: profile.student_code, student_name: profile.name, student_bio: shareBio ? profile.bio : null, question: question.trim(), target_name: tName, status: 'open' })
+    const {data:newQ} = await supabase.from('questions').insert({ student_id: profile.id, student_code: profile.student_code, student_name: profile.name, student_bio: shareBio ? profile.bio : null, question: question.trim(), target_name: tName, status: 'open' }).select().single()
+    if(newQ) notify('new_question', newQ.id)
     setBusy(false); setDone(true)
   }
 
@@ -295,6 +296,7 @@ function MyQuestions({ profile }) {
 
   const remind = async (q) => {
     await supabase.from('questions').update({ remind_at: new Date().toISOString() }).eq('id', q.id)
+    notify('reminded', q.id)
     load()
   }
 
@@ -459,6 +461,7 @@ function AlumniInbox({ profile, onCount }) {
   const send = async () => {
     setBusy(true)
     await supabase.from('questions').update({ status:'answered', answer:ans.trim(), answered_by:profile.id, answered_by_name:'Alumni '+profile.student_code, answered_by_bio: shareAns ? profile.bio : null, answered_at:new Date().toISOString() }).eq('id',sel.id)
+    notify('answered', sel.id)
     setSel(null); setAns(''); setBusy(false); load()
   }
 
@@ -466,6 +469,7 @@ function AlumniInbox({ profile, onCount }) {
     const rejected = [...(q.rejected_by||[]), profile.id]
     const still = (q.assigned_to||[]).filter(x=>x!==profile.id)
     await supabase.from('questions').update({ rejected_by:rejected, assigned_to:still, status:still.length?'assigned':'open' }).eq('id',q.id)
+    notify('rejected', q.id)
     setSel(null); load()
   }
 
@@ -603,6 +607,7 @@ function AdminAssign({ onCount }) {
       assigned_at: new Date().toISOString()
     }).eq('id', sel.id)
     console.log('assign error:', error)
+    if(!error) notify('assigned', sel.id)
     setSel(null);setPicked([]);setSearch('');setBusy(false);load()
   }
 
@@ -621,7 +626,9 @@ function AdminAssign({ onCount }) {
   // Toggle open_to_alumni
   const toggleOpenToAlumni = async (q) => {
     setBusy(true)
-    await supabase.from('questions').update({ open_to_alumni: !q.open_to_alumni }).eq('id', q.id)
+    const newVal = !q.open_to_alumni
+    await supabase.from('questions').update({ open_to_alumni: newVal }).eq('id', q.id)
+    if(newVal) notify('open_to_alumni', q.id)
     setBusy(false); load()
     // Update sel if we're viewing this question
     if (sel && sel.id === q.id) setSel(s => ({...s, open_to_alumni: !s.open_to_alumni}))
