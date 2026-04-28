@@ -966,6 +966,7 @@ function ProfileSettings({ profile, updateProfile }) {
   const lang = useLang()
   const [name, setName] = useState(profile.name||'')
   const [bio, setBio] = useState(profile.bio||'')
+  const [lineId, setLineId] = useState(profile.line_id||'')
   const [email, setEmail] = useState(profile.email||'')
   const [pw, setPw] = useState('')
   const [saved, setSaved] = useState('')
