@@ -1084,3 +1084,4 @@ const s = {
   lbl:     { fontSize:12, color:'#666', marginBottom:4, display:'block', fontWeight:500 },
   empty:   { textAlign:'center', padding:'2.5rem', color:'#999', fontSize:13 },
 }
+// Tue Apr 28 20:48:39 JST 2026
