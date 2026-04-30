@@ -387,6 +387,7 @@ function AlumniApp({ profile, updateProfile }) {
 
 // NEW: Alumni view for open-to-all questions
 function AlumniOpenQuestions({ profile, onCount }) {
+  const lang = useLang()
   const [qs, setQs] = useState([])
   const [sel, setSel] = useState(null)
   const [ans, setAns] = useState('')
@@ -457,6 +458,7 @@ function AlumniOpenQuestions({ profile, onCount }) {
 }
 
 function AlumniInbox({ profile, onCount }) {
+  const lang = useLang()
   const [qs, setQs] = useState([])
   const [sel, setSel] = useState(null)
   const [ans, setAns] = useState('')
