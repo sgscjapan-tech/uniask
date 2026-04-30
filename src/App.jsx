@@ -463,6 +463,7 @@ function AlumniInbox({ profile, onCount }) {
   const [sel, setSel] = useState(null)
   const [ans, setAns] = useState('')
   const [busy, setBusy] = useState(false)
+  const [shareAns, setShareAns] = useState(true)
 
   const load = useCallback(async () => {
     const { data } = await supabase.from('questions').select('*').contains('assigned_to',[profile.id]).neq('status','answered').order('created_at',{ascending:true})
