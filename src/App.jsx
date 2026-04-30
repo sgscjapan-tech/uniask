@@ -1026,7 +1026,7 @@ function ProfileSettings({ profile, updateProfile }) {
             <p style={{fontSize:11,color:'#999',marginBottom:4}}>{lang==='ja'?'UniAsk LINEボットを友達追加して、受け取ったコードを貼り付けてください':'Add the UniAsk LINE bot as a friend, then paste the code it sends you'}</p>
             <div style={{display:'flex',gap:8}}>
               <input value={lineId} onChange={e=>setLineId(e.target.value)} placeholder="U1234..." style={s.input}/>
-              <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={async()=>{await updateProfile({line_id:lineId});setSaved('line');setTimeout(()=>setSaved(''),2000)}}>{saved==='line'?(lang==='ja'?'保存済み！':'Saved!'):(lang==='ja'?'保存':'Save')}</button>
+              <button style={{...s.btn,...s.pri,fontSize:12,padding:'5px 12px',whiteSpace:'nowrap'}} onClick={async()=>{await updateProfile({line_id:lineId, notif_channel: lineId ? 'line' : 'none'});setSaved('line');setTimeout(()=>setSaved(''),2000)}}>{saved==='line'?(lang==='ja'?'保存済み！':'Saved!'):(lang==='ja'?'保存':'Save')}</button>
             </div>
             {profile.line_id&&<p style={{fontSize:11,color:'#27500A',marginTop:4}}>✓ {lang==='ja'?'LINE連携済み':'LINE connected'}</p>}
           </div>
