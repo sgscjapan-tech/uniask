@@ -291,6 +291,26 @@ function AskForm({ profile, onDone }) {
   )
 }
 
+
+function EditableQuestion({ q, onSave, lang }) {
+  const [editing, setEditing] = useState(false)
+  const [val, setVal] = useState(q.question)
+  const save = async () => {
+    await supabase.from('questions').update({ question: val.trim() }).eq('id', q.id)
+    setEditing(false); onSave()
+  }
+  if (editing) return (
+    <div style={{marginBottom:8}}>
+      <textarea value={val} onChange={e=>setVal(e.target.value)} rows={4} style={{...s.input,marginBottom:6}}/>
+      <div style={{display:'flex',gap:6}}>
+        <button style={s.btn} onClick={()=>setEditing(false)}>{lang==='ja'?'キャンセル':'Cancel'}</button>
+        <button style={{...s.btn,...s.pri}} onClick={save}>{lang==='ja'?'保存':'Save'}</button>
+      </div>
+    </div>
+  )
+  return <button style={{...s.btn,fontSize:12,padding:'4px 10px',marginBottom:8}} onClick={()=>setEditing(true)}>{lang==='ja'?'質問を編集':'Edit question'}</button>
+}
+
 function MyQuestions({ profile }) {
   const lang = useLang()
   const [tab, setTab] = useState('waiting')
@@ -333,6 +353,7 @@ function MyQuestions({ profile }) {
           </div>
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{q.question}</p>
           <TranslateBtn text={q.question} lang={lang} />
+          <EditableQuestion q={q} onSave={load} lang={lang} />
           <button style={{...s.btn,background:'#854F0B',color:'#fff',borderColor:'#854F0B',padding:'4px 10px',fontSize:12}} onClick={() => remind(q)}>{t(lang,'sendReminder')}</button>
         </div>
       )))}
@@ -628,6 +649,7 @@ function AdminAssign({ onCount }) {
   const doAdminAns = async () => {
     setBusy(true)
     await supabase.from('questions').update({status:'answered',answer:adminAns.trim(),answered_by:'admin',answered_by_name:'Admin',answered_at:new Date().toISOString()}).eq('id',sel.id)
+    notify('answered', sel.id)
     setSel(null);setAdminAns('');setBusy(false);load()
   }
 
