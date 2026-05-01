@@ -354,6 +354,7 @@ function MyQuestions({ profile }) {
           <p style={{fontSize:14,lineHeight:1.65,marginBottom:10}}>{q.question}</p>
           <TranslateBtn text={q.question} lang={lang} />
           <EditableQuestion q={q} onSave={load} lang={lang} />
+          <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',padding:'4px 10px',fontSize:12,marginRight:6}} onClick={async()=>{if(window.confirm(lang==='ja'?'この質問を削除しますか？':'Delete this question?')){await supabase.from('questions').delete().eq('id',q.id);load()}}}>{'🗑'}</button>
           <button style={{...s.btn,background:'#854F0B',color:'#fff',borderColor:'#854F0B',padding:'4px 10px',fontSize:12}} onClick={() => remind(q)}>{t(lang,'sendReminder')}</button>
         </div>
       )))}
@@ -678,7 +679,10 @@ function AdminAssign({ onCount }) {
     const fq = qs.find(q=>q.id===sel.id)||sel
     return (
       <div>
-        <button style={{...s.btn,marginBottom:14}} onClick={()=>{setSel(null);setPicked([]);setAdminAns('')}}>← Back</button>
+        <div style={{display:'flex',gap:8,marginBottom:14}}>
+          <button style={{...s.btn}} onClick={()=>{setSel(null);setPicked([]);setAdminAns('')}}>← Back</button>
+          <button style={{...s.btn,background:'#A32D2D',color:'#fff',borderColor:'#A32D2D',fontSize:12}} onClick={async()=>{if(window.confirm('Delete this question?')){await supabase.from('questions').delete().eq('id',sel.id);setSel(null);load()}}}>🗑 Delete question</button>
+        </div>
         <div style={{...s.card,marginBottom:12}}>
           <div style={{display:'flex',gap:6,flexWrap:'wrap',alignItems:'center',marginBottom:8}}>
             <span style={{...s.chip,background:fq.status==='answered'?'#EAF3DE':fq.status==='assigned'?'#FAEEDA':'#E6F1FB',color:fq.status==='answered'?'#085041':fq.status==='assigned'?'#633806':'#0C447C'}}>{fq.status}</span>
