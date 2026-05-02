@@ -218,9 +218,9 @@ function AuthPage({ setLang }) {
             ))}
           </div>
           <div style={s.stack}>
-            {mode==='register' && <Inp label="Full name" value={name} onChange={setName} />}
-            <Inp label="Email" value={email} onChange={setEmail} placeholder="your@email.com" />
-            <Inp label="Password" type="password" value={pw} onChange={setPw} placeholder="••••••••" onKeyDown={e => e.key==='Enter' && go()} />
+            {mode==='register' && <Inp label={lang==='ja'?'フルネーム':'Full name'} value={name} onChange={setName} />}
+            <Inp label={lang==='ja'?'メールアドレス':'Email'} value={email} onChange={setEmail} placeholder="your@email.com" />
+            <Inp label={lang==='ja'?'パスワード':'Password'} type="password" value={pw} onChange={setPw} placeholder="••••••••" onKeyDown={e => e.key==='Enter' && go()} />
             {mode==='register' && role==='admin' && <Inp label='Admin code' value={code} onChange={setCode} placeholder='' />}
             {msg && <p style={{fontSize:12, color: ok ? '#27500A' : '#A32D2D'}}>{msg}</p>}
             <button style={{...s.btn, background:'#534AB7', color:'#fff', borderColor:'#534AB7', padding:'9px', width:'100%'}} onClick={go} disabled={busy}>{busy ? (lang==='ja'?'読み込み中…':'Loading…') : (mode==='login' ? (lang==='ja'?'ログイン':'Log in') : (lang==='ja'?'登録':'Register'))}</button>
