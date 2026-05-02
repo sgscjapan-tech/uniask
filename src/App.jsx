@@ -214,7 +214,7 @@ function AuthPage({ setLang }) {
           </div>
           <div style={{...s.row,gap:4,marginBottom:14}}>
             {['student','alumni','admin'].map(r => (
-              <button key={r} onClick={() => setRole(r)} style={{...s.btn, flex:1, fontSize:12, background: role===r ? '#EEEDFE':'transparent', color: role===r ? '#3C3489':'#666', borderColor: role===r ? '#AFA9EC':'rgba(0,0,0,0.2)'}}>{r}</button>
+              <button key={r} onClick={() => { setRole(r); setNoCode(false) }} style={{...s.btn, flex:1, fontSize:12, background: role===r ? '#EEEDFE':'transparent', color: role===r ? '#3C3489':'#666', borderColor: role===r ? '#AFA9EC':'rgba(0,0,0,0.2)'}}>{r==='student'?(lang==='ja'?'生徒/保護者':'student/parent'):r==='alumni'?(lang==='ja'?'卒業生':'alumni'):(lang==='ja'?'管理者':'admin')}</button>
             ))}
           </div>
           <div style={s.stack}>
