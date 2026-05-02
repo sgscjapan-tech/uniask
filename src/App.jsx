@@ -191,7 +191,7 @@ function AuthPage() {
         if (!school) { setMsg('School code not found'); setBusy(false); return }
       }
       const sc = (role === 'admin' ? 'ADM-' : role === 'alumni' ? 'ALM-' : 'STU-') + String(Math.floor(Math.random()*9000)+1000)
-      const { error } = await supabase.auth.signUp({ email, password: pw, options: { data: { name, role, school_code: code, student_code: sc } } })
+      const { error } = await supabase.auth.signUp({ email, password: pw, options: { data: { name, role, school_code: code, student_code: sc, notif_email: notifEmail } } })
       if (error) setMsg(error.message)
       else { setMsg('Check your email to confirm your account!'); setOk(true) }
       setBusy(false)
@@ -220,7 +220,8 @@ function AuthPage() {
             {mode==='register' && <Inp label="Full name" value={name} onChange={setName} />}
             <Inp label="Email" value={email} onChange={setEmail} placeholder="your@email.com" />
             <Inp label="Password" type="password" value={pw} onChange={setPw} placeholder="••••••••" onKeyDown={e => e.key==='Enter' && go()} />
-            <Inp label={role==='admin' ? 'Admin code' : 'School code'} value={code} onChange={setCode} placeholder={role==='admin' ? 'WaWaWaWa' : 'e.g. 12345'} />
+            {mode==='register' && <Inp label='Notification email (optional)' value={notifEmail} onChange={setNotifEmail} placeholder='email for notifications' />}
+            {mode==='register' && role==='admin' && <Inp label='Admin code' value={code} onChange={setCode} placeholder='' />}
             {msg && <p style={{fontSize:12, color: ok ? '#27500A' : '#A32D2D'}}>{msg}</p>}
             <button style={{...s.btn, background:'#534AB7', color:'#fff', borderColor:'#534AB7', padding:'9px', width:'100%'}} onClick={go} disabled={busy}>{busy ? 'Loading…' : (mode==='login' ? 'Log in' : 'Register')}</button>
           </div>
