@@ -144,7 +144,7 @@ export default function App() {
   }
 
   if (loading) return <div style={s.center}><p>Loading…</p></div>
-  if (!session || !profile) return <LangContext.Provider value={lang}><AuthPage /></LangContext.Provider>
+  if (!session || !profile) return <LangContext.Provider value={lang}><AuthPage setLang={setLang} /></LangContext.Provider>
 
   return (
     <LangContext.Provider value={lang}>
