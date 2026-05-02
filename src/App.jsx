@@ -166,7 +166,7 @@ export default function App() {
   )
 }
 
-function AuthPage({ setLang }) {
+function AuthPage() {
   const [mode, setMode] = useState('login')
   const [role, setRole] = useState('student')
   const [email, setEmail] = useState('')
@@ -202,10 +202,7 @@ function AuthPage({ setLang }) {
     <div style={s.center}>
       <div style={{width:'100%',maxWidth:380}}>
         <div style={{textAlign:'center',marginBottom:24}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
-            <div style={s.logo}>UniAsk</div>
-            {setLang && <button style={{...s.btn,fontSize:12}} onClick={()=>setLang(l=>l==='en'?'ja':'en')}>{lang==='en'?'🇯🇵 JP':'🇬🇧 EN'}</button>}
-          </div>
+          <div style={s.logo}>UniAsk</div>
           <p style={{color:'#666',fontSize:13}}>University Application Q&A</p>
         </div>
         <div style={s.card}>
