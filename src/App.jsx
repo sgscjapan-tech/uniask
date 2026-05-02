@@ -204,12 +204,12 @@ function AuthPage({ setLang }) {
       <div style={{width:'100%',maxWidth:380}}>
         <div style={{textAlign:'center',marginBottom:24}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}><div style={s.logo}>UniAsk</div><button style={{...s.btn,fontSize:12}} onClick={()=>setLang&&setLang(l=>l==='en'?'ja':'en')}>{lang==='en'?'🇯🇵 JP':'🇬🇧 EN'}</button></div>
-          <p style={{color:'#666',fontSize:13}}>University Application Q&A</p>
+          <p style={{color:'#666',fontSize:13}}>{lang==='ja'?'大学受験Q&Aプラットフォーム':'University Application Q&A'}</p>
         </div>
         <div style={s.card}>
           <div style={{...s.row,marginBottom:14,gap:6}}>
             {['login','register'].map(m => (
-              <button key={m} onClick={() => setMode(m)} style={{...s.btn, flex:1, background: mode===m ? '#534AB7':'transparent', color: mode===m ? '#fff':'#1a1a1a', borderColor: mode===m ? '#534AB7':'rgba(0,0,0,0.28)'}}>{m === 'login' ? 'Log in' : 'Register'}</button>
+              <button key={m} onClick={() => setMode(m)} style={{...s.btn, flex:1, background: mode===m ? '#534AB7':'transparent', color: mode===m ? '#fff':'#1a1a1a', borderColor: mode===m ? '#534AB7':'rgba(0,0,0,0.28)'}}>{m === 'login' ? (lang==='ja'?'ログイン':'Log in') : (lang==='ja'?'登録':'Register')}</button>
             ))}
           </div>
           <div style={{...s.row,gap:4,marginBottom:14}}>
@@ -223,7 +223,7 @@ function AuthPage({ setLang }) {
             <Inp label="Password" type="password" value={pw} onChange={setPw} placeholder="••••••••" onKeyDown={e => e.key==='Enter' && go()} />
             {mode==='register' && role==='admin' && <Inp label='Admin code' value={code} onChange={setCode} placeholder='' />}
             {msg && <p style={{fontSize:12, color: ok ? '#27500A' : '#A32D2D'}}>{msg}</p>}
-            <button style={{...s.btn, background:'#534AB7', color:'#fff', borderColor:'#534AB7', padding:'9px', width:'100%'}} onClick={go} disabled={busy}>{busy ? 'Loading…' : (mode==='login' ? 'Log in' : 'Register')}</button>
+            <button style={{...s.btn, background:'#534AB7', color:'#fff', borderColor:'#534AB7', padding:'9px', width:'100%'}} onClick={go} disabled={busy}>{busy ? (lang==='ja'?'読み込み中…':'Loading…') : (mode==='login' ? (lang==='ja'?'ログイン':'Log in') : (lang==='ja'?'登録':'Register'))}</button>
           </div>
         </div>
       </div>
