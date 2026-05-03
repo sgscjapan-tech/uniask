@@ -154,7 +154,7 @@ export default function App() {
         <div style={s.row}>
           <span style={{fontSize:12,color:'#666',marginRight:8}}>{profile.name}</span>
           <span style={{...s.chip, background:'#EEEDFE', color:'#3C3489', marginRight:8}}>{profile.role}</span>
-          <button style={{...s.btn,marginRight:8,fontSize:12}} onClick={()=>setLang(l=>l==='en'?'ja':'en')}>{lang==='en'?'🇯🇵 JP':'🇬🇧 EN'}</button>
+          <button style={{...s.btn,marginRight:8,fontSize:12}} onClick={async()=>{const nl=lang==='en'?'ja':'en';setLang(nl);if(profile)await supabase.from('profiles').update({lang:nl}).eq('id',profile.id)}}>{lang==='en'?'🇯🇵 JP':'🇬🇧 EN'}</button>
           <button style={s.btn} onClick={logout}>{t(lang,'logout')}</button>
         </div>
       </div>
