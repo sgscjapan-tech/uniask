@@ -410,6 +410,7 @@ function AuthPage({ setLang }) {
             {mode==='register' && <Inp label={lang==='ja'?'フルネーム':'Full name'} value={name} onChange={setName} />}
             <Inp label={lang==='ja'?'メールアドレス':'Email'} value={email} onChange={setEmail} placeholder="your@email.com" />
             <Inp label={lang==='ja'?'パスワード':'Password'} type="password" value={pw} onChange={setPw} placeholder="••••••••" onKeyDown={e => e.key==='Enter' && go()} />
+            {mode==='register' && role !== 'admin' && <Inp label={lang==='ja'?'学校コード':'School code'} value={code} onChange={setCode} placeholder='e.g. 12345' />}
             {mode==='register' && role==='admin' && <Inp label='Admin code' value={code} onChange={setCode} placeholder='' />}
             <LoginGuide role={role} lang={lang} />
           {msg && <p style={{fontSize:12, color: ok ? '#27500A' : '#A32D2D'}}>{msg}</p>}
